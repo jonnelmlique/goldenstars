@@ -68,6 +68,22 @@ class RoleResource extends Resource
                                 ->columns(2)
                                 ->gridDirection('row'),
                         ]),
+                    Forms\Components\Tabs\Tab::make('Tickets')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Tickets'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
+                    Forms\Components\Tabs\Tab::make('Ticket Categories')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Ticket Categories'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
                 ])
                 ->columnSpanFull(),
         ]);
@@ -81,7 +97,9 @@ class RoleResource extends Resource
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('description')
                     ->limit(50),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime('M d, Y h:i A')
+                    ->timezone('Asia/Manila'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

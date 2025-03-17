@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\DepartmentResource\Pages;
-use App\Models\Department;
+use App\Filament\Resources\TicketCategoryResource\Pages;
+use App\Models\TicketCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -11,23 +11,41 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class DepartmentResource extends Resource
+class TicketCategoryResource extends Resource
 {
-    protected static ?string $model = Department::class;
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $model = TicketCategory::class;
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Tickets';
+    protected static ?int $navigationSort = 2;
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('ticket_categories.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('ticket_categories.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('ticket_categories.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('ticket_categories.delete');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('code')
-                ->required()
-                ->maxLength(255),
             Forms\Components\TextInput::make('name')
                 ->required()
                 ->maxLength(255),
             Forms\Components\Textarea::make('description')
-                ->maxLength(65535)
-                ->columnSpanFull(),
+                ->maxLength(65535),
         ]);
     }
 
@@ -35,10 +53,8 @@ class DepartmentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code'),
                 Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('description')
-                    ->limit(50),
+                Tables\Columns\TextColumn::make('description')->limit(50),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M d, Y h:i A')
                     ->timezone('Asia/Manila'),
@@ -54,30 +70,10 @@ class DepartmentResource extends Resource
             ]);
     }
 
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasPermission('departments.view');
-    }
-
-    public static function canCreate(): bool
-    {
-        return auth()->user()->hasPermission('departments.create');
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return auth()->user()->hasPermission('departments.edit');
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return auth()->user()->hasPermission('departments.delete');
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDepartments::route('/'),
+            'index' => Pages\ListTicketCategories::route('/'),
         ];
     }
 }
