@@ -43,7 +43,9 @@ class BuildingResource extends Resource
                 Tables\Columns\TextColumn::make('description')
                     ->limit(50),
                 Tables\Columns\TextColumn::make('location'),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime('M d, Y h:i A')
+                    ->timezone('Asia/Manila'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
