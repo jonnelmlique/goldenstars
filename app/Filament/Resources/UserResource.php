@@ -57,7 +57,8 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('building.code'),
                 Tables\Columns\TextColumn::make('role.code'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime(),
+                    ->dateTime('M d, Y h:i A')
+                    ->timezone('Asia/Manila'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
