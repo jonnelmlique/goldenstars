@@ -52,8 +52,26 @@ class TicketResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('priority'),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('priority')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
+                    ->color(fn(string $state): string => match ($state) {
+                        'high' => 'danger',
+                        'medium' => 'warning',
+                        'low' => 'success',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
+                    ->color(fn(string $state): string => match ($state) {
+                        'open' => 'info',
+                        'in_progress' => 'warning',
+                        'resolved' => 'success',
+                        'completed' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Category'),
                 Tables\Columns\TextColumn::make('requestor.name')
@@ -65,7 +83,14 @@ class TicketResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M d, Y h:i A')
-                    ->timezone('Asia/Manila'),
+                    ->timezone('Asia/Manila')
+                    ->formatStateUsing(function ($state) {
+                        $date = \Carbon\Carbon::parse($state);
+                        if ($date->isToday()) {
+                            return $date->diffForHumans();
+                        }
+                        return $date->format('M d, Y h:i A');
+                    }),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -97,8 +122,9 @@ class TicketResource extends Resource
                                 'status' => 'open'
                             ]);
                         })
-                        ->visible(fn(Ticket $record) => 
-                            $record->status === 'open' && 
+                        ->visible(
+                            fn(Ticket $record) =>
+                            $record->status === 'open' &&
                             auth()->user()->hasPermission('tickets.assign') &&
                             is_null($record->assignee_id)
                         )
@@ -184,7 +210,8 @@ class TicketResource extends Resource
             $query->where('requestor_id', auth()->id());
         }
 
-        return $query;
+        // Order by latest first
+        return $query->latest();
     }
 
     public static function canViewAny(): bool
@@ -211,8 +238,6 @@ class TicketResource extends Resource
     {
         return [
             'index' => Pages\ListTickets::route('/'),
-            'create' => Pages\CreateTicket::route('/create'),
-            'edit' => Pages\EditTicket::route('/{record}/edit'),
         ];
     }
 }
