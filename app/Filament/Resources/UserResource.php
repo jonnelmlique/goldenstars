@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Model;
 
 class UserResource extends Resource
 {
@@ -79,5 +80,25 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('users.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('users.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('users.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('users.delete');
     }
 }

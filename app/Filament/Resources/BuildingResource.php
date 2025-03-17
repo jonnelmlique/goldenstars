@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class BuildingResource extends Resource
 {
@@ -60,5 +61,25 @@ class BuildingResource extends Resource
         return [
             'index' => Pages\ListBuildings::route('/'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('buildings.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('buildings.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('buildings.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('buildings.delete');
     }
 }

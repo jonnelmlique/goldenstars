@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class RoleResource extends Resource
 {
@@ -17,6 +18,12 @@ class RoleResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $getPermissionsByGroup = function ($group) {
+            return \App\Models\Permission::where('group', $group)
+                ->pluck('name', 'id')
+                ->toArray();
+        };
+
         return $form->schema([
             Forms\Components\TextInput::make('code')
                 ->required()
@@ -26,6 +33,42 @@ class RoleResource extends Resource
                 ->maxLength(255),
             Forms\Components\Textarea::make('description')
                 ->maxLength(65535)
+                ->columnSpanFull(),
+            Forms\Components\Tabs::make('Permissions')
+                ->tabs([
+                    Forms\Components\Tabs\Tab::make('Users')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Users'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
+                    Forms\Components\Tabs\Tab::make('Departments')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Departments'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
+                    Forms\Components\Tabs\Tab::make('Buildings')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Buildings'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
+                    Forms\Components\Tabs\Tab::make('Roles')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Roles'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
+                ])
                 ->columnSpanFull(),
         ]);
     }
@@ -49,6 +92,26 @@ class RoleResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('roles.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('roles.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('roles.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('roles.delete');
     }
 
     public static function getPages(): array
