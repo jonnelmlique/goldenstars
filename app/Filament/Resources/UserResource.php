@@ -53,9 +53,9 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('department.name'),
-                Tables\Columns\TextColumn::make('building.name'),
-                Tables\Columns\TextColumn::make('role.name'),
+                Tables\Columns\TextColumn::make('department.code'),
+                Tables\Columns\TextColumn::make('building.code'),
+                Tables\Columns\TextColumn::make('role.code'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime(),
             ])
