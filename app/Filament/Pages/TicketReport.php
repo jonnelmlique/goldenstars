@@ -16,7 +16,7 @@ use App\Exports\TicketsExport;
 class TicketReport extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected static ?string $navigationLabel = 'Export Reports';
+    protected static ?string $navigationLabel = 'Export Tickets Reports';
     protected static ?string $navigationGroup = 'Reports';
     protected static string $view = 'filament.pages.ticket-report';
 
@@ -26,8 +26,17 @@ class TicketReport extends Page
     public $reportLayout = 'detailed'; // Renamed from $layout to $reportLayout
     public $previewData = ['tickets' => [], 'stats' => []]; // Add preview data property
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasPermission('tickets.reports');
+    }
+
     public function mount(): void
     {
+        if (!auth()->user()->hasPermission('tickets.reports')) {
+            $this->redirect('/');
+        }
+
         $this->dateRange = [
             'from' => now()->subDays(30)->format('Y-m-d'),
             'until' => now()->format('Y-m-d'),

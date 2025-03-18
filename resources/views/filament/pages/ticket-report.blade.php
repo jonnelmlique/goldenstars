@@ -31,7 +31,7 @@
                 <x-slot name="heading">
                     <div class="flex items-center justify-between">
                         <span>Report Preview</span>
-                        <span class="text-sm text-gray-500">{{ now()->format('F d, Y') }}</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ now()->format('F d, Y') }}</span>
                     </div>
                 </x-slot>
 
@@ -39,29 +39,33 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">ID</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Title</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Status</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Priority</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Category</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Requestor</th>
-                                <th class="px-4 py-2 text-left font-medium text-gray-500">Created</th>
+                            <tr class="bg-gray-50 dark:bg-gray-700">
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">ID</th>
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Title</th>
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Priority
+                                </th>
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Category
+                                </th>
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Requestor
+                                </th>
+                                <th class="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Created
+                                </th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($this->previewData['tickets'] as $ticket)
-                                                        <tr class="hover:bg-gray-50">
-                                                            <td class="px-4 py-2">#{{ $ticket->id }}</td>
-                                                            <td class="px-4 py-2">{{ $ticket->title }}</td>
+                                                        <tr>
+                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">#{{ $ticket->id }}</td>
+                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $ticket->title }}</td>
                                                             <td class="px-4 py-2">
                                                                 <span @class([
                                                                     'px-2 py-1 rounded-full text-xs font-medium',
-                                                                    'bg-blue-100 text-blue-700' => $ticket->status === 'open',
-                                                                    'bg-yellow-100 text-yellow-700' => $ticket->status === 'in_progress',
-                                                                    'bg-green-100 text-green-700' => $ticket->status === 'resolved',
-                                                                    'bg-purple-100 text-purple-700' => $ticket->status === 'completed',
-                                                                    'bg-red-100 text-red-700' => $ticket->status === 'cancelled',
+                                                                    'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' => $ticket->status === 'open',
+                                                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' => $ticket->status === 'in_progress',
+                                                                    'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' => $ticket->status === 'resolved',
+                                                                    'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' => $ticket->status === 'completed',
+                                                                    'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' => $ticket->status === 'cancelled',
                                                                 ])>
                                                                     {{ strtoupper($ticket->status) }}
                                                                 </span>
@@ -69,16 +73,18 @@
                                                             <td class="px-4 py-2">
                                                                 <span @class([
                                                                     'px-2 py-1 rounded-full text-xs font-medium',
-                                                                    'bg-red-100 text-red-700' => $ticket->priority === 'high',
-                                                                    'bg-yellow-100 text-yellow-700' => $ticket->priority === 'medium',
-                                                                    'bg-green-100 text-green-700' => $ticket->priority === 'low',
+                                                                    'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' => $ticket->priority === 'high',
+                                                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' => $ticket->priority === 'medium',
+                                                                    'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' => $ticket->priority === 'low',
                                                                 ])>
                                                                     {{ strtoupper($ticket->priority) }}
                                                                 </span>
                                                             </td>
-                                                            <td class="px-4 py-2">{{ $ticket->category->name }}</td>
-                                                            <td class="px-4 py-2">{{ $ticket->requestor->name }}</td>
-                                                            <td class="px-4 py-2">{{ $ticket->created_at->format('M d, Y') }}</td>
+                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $ticket->category->name }}</td>
+                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $ticket->requestor->name }}</td>
+                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">
+                                                                {{ $ticket->created_at->format('M d, Y') }}
+                                                            </td>
                                                         </tr>
                             @endforeach
                         </tbody>

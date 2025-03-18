@@ -36,6 +36,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'tickets.delete', 'group' => 'Tickets'],
             ['name' => 'tickets.assign', 'group' => 'Tickets'],
             ['name' => 'tickets.view.all', 'group' => 'Tickets'],
+            ['name' => 'tickets.reports', 'group' => 'Tickets'],
 
             ['name' => 'ticket_categories.view', 'group' => 'Ticket Categories'],
             ['name' => 'ticket_categories.create', 'group' => 'Ticket Categories'],
