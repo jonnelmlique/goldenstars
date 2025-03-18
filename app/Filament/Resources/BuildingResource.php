@@ -15,6 +15,8 @@ class BuildingResource extends Resource
 {
     protected static ?string $model = Building::class;
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static ?string $navigationGroup = 'Configuration';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
