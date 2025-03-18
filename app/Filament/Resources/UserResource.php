@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 
 class UserResource extends Resource
 {
@@ -21,6 +22,8 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $isCreateForm = !$form->getRecord();
+
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
@@ -33,10 +36,9 @@ class UserResource extends Resource
                     ->unique(User::class, 'email', ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required(fn($component, $get) => $component->getRecord() === null)
-                    ->minLength(8)
-                    ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
-                    ->dehydrated(fn($state) => filled($state)),
+                    ->required($isCreateForm)
+                    ->visible($isCreateForm)
+                    ->minLength(8),
                 Forms\Components\Select::make('department_id')
                     ->relationship('department', 'code')
                     ->required(),
@@ -69,6 +71,32 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('change_password')
+                    ->icon('heroicon-o-key')
+                    ->form([
+                        Forms\Components\TextInput::make('new_password')
+                            ->label('New Password')
+                            ->password()
+                            ->required()
+                            ->minLength(8),
+                        Forms\Components\TextInput::make('new_password_confirmation')
+                            ->label('Confirm Password')
+                            ->password()
+                            ->required()
+                            ->same('new_password'),
+                    ])
+                    ->action(function (User $record, array $data): void {
+                        $record->update([
+                            'password' => Hash::make($data['new_password']),
+                        ]);
+
+                        Notification::make()
+                            ->title('Password updated successfully')
+                            ->success()
+                            ->send();
+                    })
+                    ->modalHeading('Change Password')
+                    ->modalButton('Update Password'),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

@@ -17,6 +17,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\MenuItem;
+use App\Filament\Pages\Profile;
+use App\Filament\Pages\ChangePassword;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -36,6 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
                 \App\Filament\Pages\CompleteProfile::class,
+                \App\Filament\Pages\Profile::class,
+                \App\Filament\Pages\ChangePassword::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -58,6 +63,23 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->navigationItems([
+                \Filament\Navigation\NavigationItem::make('Profile')
+                    ->icon('heroicon-o-user')
+                    ->url(fn() => \App\Filament\Pages\Profile::getUrl())
+                    ->group('Account Settings')
+                    ->sort(1),
+                \Filament\Navigation\NavigationItem::make('Change Password')
+                    ->icon('heroicon-o-key')
+                    ->url(fn() => \App\Filament\Pages\ChangePassword::getUrl())
+                    ->group('Account Settings')
+                    ->sort(2),
+            ])
+            ->navigationGroups([
+                'Configuration',
+                'Users',
+                'Account Settings',
             ]);
     }
 }
