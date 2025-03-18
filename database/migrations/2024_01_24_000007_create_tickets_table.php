@@ -16,6 +16,8 @@ return new class extends Migration {
             $table->foreignId('category_id')->constrained('ticket_categories');
             $table->foreignId('requestor_id')->constrained('users');
             $table->foreignId('assignee_id')->nullable()->constrained('users');
+            $table->foreignId('building_id')->constrained();
+            $table->foreignId('department_id')->constrained();
             $table->timestamps();
         });
 

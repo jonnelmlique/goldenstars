@@ -18,7 +18,10 @@ class ListTickets extends ListRecords
                 ->model(Ticket::class)
                 ->modalHeading('Create Ticket')
                 ->mutateFormDataUsing(function (array $data): array {
-                    $data['requestor_id'] = auth()->id();
+                    $user = auth()->user();
+                    $data['requestor_id'] = $user->id;
+                    $data['building_id'] = $user->building_id;
+                    $data['department_id'] = $user->department_id;
                     $data['status'] = 'open';
                     return $data;
                 }),

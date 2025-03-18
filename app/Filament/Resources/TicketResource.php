@@ -26,13 +26,26 @@ class TicketResource extends Resource
                 ->maxLength(255),
             Forms\Components\Textarea::make('description')
                 ->required(),
-            Forms\Components\Select::make('priority')
-                ->options([
-                    'low' => 'Low',
-                    'medium' => 'Medium',
-                    'high' => 'High',
-                ])
-                ->required(),
+            Forms\Components\Grid::make(3)
+                ->schema([
+                    Forms\Components\Select::make('priority')
+                        ->options([
+                            'low' => 'Low',
+                            'medium' => 'Medium',
+                            'high' => 'High',
+                        ])
+                        ->required(),
+                    Forms\Components\Select::make('building_id')
+                        ->label('Building')
+                        ->relationship('building', 'name')
+                        ->required()
+                        ->default(fn() => auth()->user()->building_id),
+                    Forms\Components\Select::make('department_id')
+                        ->label('Department')
+                        ->relationship('department', 'name')
+                        ->required()
+                        ->default(fn() => auth()->user()->department_id),
+                ]),
             Forms\Components\Select::make('category_id')
                 ->relationship('category', 'name')
                 ->required(),
@@ -74,6 +87,12 @@ class TicketResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Category'),
+                Tables\Columns\TextColumn::make('building.name')
+                    ->label('Building')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('department.name')
+                    ->label('Department')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('requestor.name')
                     ->label('Requestor')
                     ->searchable(),

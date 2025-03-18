@@ -16,6 +16,8 @@ class Ticket extends Model
         'category_id',
         'requestor_id',
         'assignee_id',
+        'building_id',
+        'department_id',
     ];
 
     public function category(): BelongsTo
@@ -31,6 +33,16 @@ class Ticket extends Model
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function building(): BelongsTo
+    {
+        return $this->belongsTo(Building::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function rating(): HasOne

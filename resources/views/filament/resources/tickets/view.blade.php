@@ -41,6 +41,14 @@
             <div class="text-base">{{ $ticket->category->name }}</div>
         </div>
         <div>
+            <div class="text-sm font-medium text-gray-500 mb-1">Building</div>
+            <div class="text-base">{{ $ticket->building->name }}</div>
+        </div>
+        <div>
+            <div class="text-sm font-medium text-gray-500 mb-1">Department</div>
+            <div class="text-base">{{ $ticket->department->name }}</div>
+        </div>
+        <div>
             <div class="text-sm font-medium text-gray-500 mb-1">Requestor</div>
             <div class="text-base">{{ $ticket->requestor->name }}</div>
         </div>
