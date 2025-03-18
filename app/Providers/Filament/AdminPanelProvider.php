@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('app')
-            ->path('app')
+            ->path('') // Change from 'app' to empty string
             ->login()
             ->registration()
             ->colors([
