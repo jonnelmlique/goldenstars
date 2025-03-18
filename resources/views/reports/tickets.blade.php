@@ -105,7 +105,6 @@
 
 <body>
     <div class="header">
-        <img src="{{ public_path('images/logo.png') }}" class="logo">
         <div class="title">{{ $appName }}</div>
         <div class="subtitle">Ticket Report</div>
         <div>{{ Carbon\Carbon::parse($dateRange['from'])->format('M d, Y') }} -
