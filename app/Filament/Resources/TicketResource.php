@@ -26,8 +26,13 @@ class TicketResource extends Resource
                 ->maxLength(255),
             Forms\Components\Textarea::make('description')
                 ->required(),
-            Forms\Components\Grid::make(3)
+            Forms\Components\Grid::make(2)
                 ->schema([
+                    Forms\Components\Select::make('category_id')
+                        ->relationship('category', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
                     Forms\Components\Select::make('priority')
                         ->options([
                             'low' => 'Low',
@@ -35,26 +40,30 @@ class TicketResource extends Resource
                             'high' => 'High',
                         ])
                         ->required(),
+                ]),
+            Forms\Components\Grid::make(2)
+                ->schema([
                     Forms\Components\Select::make('building_id')
                         ->label('Building')
                         ->relationship('building', 'name')
-                        ->required()
-                        ->default(fn() => auth()->user()->building_id),
+                        ->searchable()
+                        ->preload()
+                        ->required(),
                     Forms\Components\Select::make('department_id')
                         ->label('Department')
                         ->relationship('department', 'name')
-                        ->required()
-                        ->default(fn() => auth()->user()->department_id),
+                        ->searchable()
+                        ->preload()
+                        ->required(),
                 ]),
-            Forms\Components\Select::make('category_id')
-                ->relationship('category', 'name')
-                ->required(),
             Forms\Components\Select::make('assignee_id')
                 ->relationship('assignee', 'name', function ($query) {
                     return $query->whereHas('department', function ($q) {
                         $q->where('code', 'IT');
                     });
                 })
+                ->searchable()
+                ->preload()
                 ->label('Assign To')
                 ->visible(fn() => auth()->user()->hasPermission('tickets.assign')),
         ]);
