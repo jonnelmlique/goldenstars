@@ -53,11 +53,16 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('department.code'),
-                Tables\Columns\TextColumn::make('building.code'),
-                Tables\Columns\TextColumn::make('role.code'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('department.code')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('building.code')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('role.code')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M d, Y h:i A')
                     ->timezone('Asia/Manila'),
