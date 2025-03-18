@@ -42,6 +42,11 @@ class PermissionSeeder extends Seeder
             ['name' => 'ticket_categories.create', 'group' => 'Ticket Categories'],
             ['name' => 'ticket_categories.edit', 'group' => 'Ticket Categories'],
             ['name' => 'ticket_categories.delete', 'group' => 'Ticket Categories'],
+
+            ['name' => 'inventory.view', 'group' => 'Inventory'],
+            ['name' => 'inventory.create', 'group' => 'Inventory'],
+            ['name' => 'inventory.edit', 'group' => 'Inventory'],
+            ['name' => 'inventory.delete', 'group' => 'Inventory'],
         ];
 
         foreach ($permissions as $permission) {

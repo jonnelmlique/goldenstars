@@ -86,6 +86,14 @@ class RoleResource extends Resource
                                 ->columns(2)
                                 ->gridDirection('row'),
                         ]),
+                    Forms\Components\Tabs\Tab::make('Inventory')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Inventory'))
+                                ->columns(2)
+                                ->gridDirection('row'),
+                        ]),
                 ])
                 ->columnSpanFull(),
         ]);
