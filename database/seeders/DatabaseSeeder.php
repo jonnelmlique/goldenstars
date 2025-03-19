@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             DepartmentSeeder::class,
             BuildingSeeder::class,
+            TicketCategorySeeder::class, // Add this line
             RoleSeeder::class,
         ]);
     }

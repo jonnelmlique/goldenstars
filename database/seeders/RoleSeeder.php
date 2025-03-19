@@ -35,9 +35,16 @@ class RoleSeeder extends Seeder
             'updated_at' => $now,
         ]);
 
-        // Attach permissions
+        // Attach all permissions to admin role
         $adminRole->permissions()->attach(Permission::all());
 
+        // Attach specific permissions to staff role
+        $staffRole->permissions()->attach(
+            Permission::whereIn('name', [
+                'tickets.view',
+                'tickets.create'
+            ])->get()
+        );
 
         // Get first building and department
         $building = Building::first();
@@ -55,7 +62,5 @@ class RoleSeeder extends Seeder
             'created_at' => $now,
             'updated_at' => $now,
         ]);
-
-
     }
 }

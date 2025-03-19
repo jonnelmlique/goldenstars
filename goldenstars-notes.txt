@@ -1,0 +1,21 @@
+compsoer install
+
+php artisan migrate
+
+cp .env.example .env
+nano .env
+
+php artisan key:generate
+
+/run /
+php artisan serve
+
+/specific ip run /
+php artisan serve --host=192.168.x.x --port=8000
+
+/ updating seed /
+php artisan db:seed
+
+/ reset seed /
+php artisan migrate:fresh --seed
+
