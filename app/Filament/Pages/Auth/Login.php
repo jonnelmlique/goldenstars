@@ -25,6 +25,7 @@ class Login extends BaseLogin
             Forms\Components\TextInput::make('password')
                 ->label('Password')
                 ->password()
+                ->revealable()
                 ->required(),
             Forms\Components\Checkbox::make('remember')
                 ->label('Remember me'),

@@ -28,10 +28,12 @@ class Register extends BaseRegister
                 ->unique('users', 'email'),
             Forms\Components\TextInput::make('password')
                 ->password()
+                ->revealable()
                 ->required()
                 ->minLength(8),
             Forms\Components\TextInput::make('password_confirmation')
                 ->password()
+                ->revealable()
                 ->required()
                 ->minLength(8)
                 ->same('password'),

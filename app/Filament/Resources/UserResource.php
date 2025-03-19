@@ -40,6 +40,7 @@ class UserResource extends Resource
                     ->unique(User::class, 'email', ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
                     ->password()
+                    ->revealable()
                     ->required($isCreateForm)
                     ->visible($isCreateForm)
                     ->minLength(8),
@@ -83,11 +84,13 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('new_password')
                             ->label('New Password')
                             ->password()
+                            ->revealable()
                             ->required()
                             ->minLength(8),
                         Forms\Components\TextInput::make('new_password_confirmation')
                             ->label('Confirm Password')
                             ->password()
+                            ->revealable()
                             ->required()
                             ->same('new_password'),
                     ])

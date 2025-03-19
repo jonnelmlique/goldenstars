@@ -30,16 +30,19 @@ class ChangePassword extends Page
                 Forms\Components\TextInput::make('current_password')
                     ->label('Current Password')
                     ->password()
+                    ->revealable()
                     ->required()
                     ->rules(['current_password']),
                 Forms\Components\TextInput::make('new_password')
                     ->label('New Password')
                     ->password()
+                    ->revealable()
                     ->required()
                     ->minLength(8),
                 Forms\Components\TextInput::make('new_password_confirmation')
                     ->label('Confirm New Password')
                     ->password()
+                    ->revealable()
                     ->required()
                     ->same('new_password'),
             ]);
