@@ -39,10 +39,19 @@ class InventoryItemResource extends Resource
                     ->required()
                     ->searchable(),
             ]),
-            Forms\Components\Select::make('assigned_to')
-                ->relationship('assignedTo', 'name')
-                ->searchable()
-                ->label('Assigned To'),
+            Forms\Components\Grid::make(2)->schema([
+                Forms\Components\Select::make('assigned_to')
+                    ->relationship('assignedTo', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Assigned To')
+                    ->placeholder('Select a user')
+                    ->nullable(),
+                Forms\Components\TextInput::make('custom_assigned_to')
+                    ->label('Other Name')
+                    ->placeholder('Enter name if not in list')
+                    ->maxLength(255),
+            ]),
             Forms\Components\DatePicker::make('date_transferred')
                 ->label('Date Transferred'),
             Forms\Components\Toggle::make('is_defective')
@@ -56,6 +65,7 @@ class InventoryItemResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('item_name')
                     ->searchable(),
@@ -67,10 +77,18 @@ class InventoryItemResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('department.name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('assignedTo.name')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('assigned_to')
                     ->label('Assigned To')
-                    ->default('Unassigned'),
+                    ->getStateUsing(function ($record) {
+                        if ($record->assigned_to && $record->assignedTo) {
+                            return $record->assignedTo->name;
+                        }
+                        if (!empty($record->custom_assigned_to)) {
+                            return $record->custom_assigned_to;
+                        }
+                        return 'Unassigned';
+                    })
+                    ->searchable(),
                 Tables\Columns\IconColumn::make('is_defective')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('is_defective')

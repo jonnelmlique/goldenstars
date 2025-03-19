@@ -14,6 +14,7 @@ class InventoryItem extends Model
         'department_id',
         'building_id',
         'assigned_to',
+        'custom_assigned_to',
         'is_defective',
         'date_transferred',
         'notes',

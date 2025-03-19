@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->foreignId('department_id')->constrained();
             $table->foreignId('building_id')->constrained();
             $table->foreignId('assigned_to')->nullable()->constrained('users');
+            $table->string('custom_assigned_to')->nullable();
             $table->boolean('is_defective')->default(false);
             $table->date('date_transferred')->nullable();
             $table->text('notes')->nullable();
