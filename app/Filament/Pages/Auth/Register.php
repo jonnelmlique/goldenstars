@@ -4,22 +4,43 @@ namespace App\Filament\Pages\Auth;
 
 use Filament\Forms;
 use Filament\Pages\Auth\Register as BaseRegister;
+use Filament\Forms\Form;
+use Illuminate\Database\Eloquent\Model;
 
 class Register extends BaseRegister
 {
-    public function form(Forms\Form $form): Forms\Form
+    public function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('email')->required()->email(),
-                Forms\Components\TextInput::make('password')->required()->password(),
-                Forms\Components\TextInput::make('password_confirmation')
-                    ->required()
-                    ->password()
-                    ->same('password'),
-            ]);
+        return $form->schema([
+            Forms\Components\TextInput::make('name')
+                ->required()
+                ->maxLength(255),
+            Forms\Components\TextInput::make('username')
+                ->required()
+                ->maxLength(255)
+                ->alphaNum()
+                ->unique('users', 'username'),
+            Forms\Components\TextInput::make('email')
+                ->label('Email address')
+                ->email()
+                ->required()
+                ->maxLength(255)
+                ->unique('users', 'email'),
+            Forms\Components\TextInput::make('password')
+                ->password()
+                ->required()
+                ->minLength(8),
+            Forms\Components\TextInput::make('password_confirmation')
+                ->password()
+                ->required()
+                ->minLength(8)
+                ->same('password'),
+        ]);
     }
 
-
+    protected function handleRegistration(array $data): Model
+    {
+        $data['password'] = bcrypt($data['password']);
+        return static::getUserModel()::create($data);
+    }
 }
