@@ -73,6 +73,11 @@ class InventoryItemResource extends Resource
                     ->default('Unassigned'),
                 Tables\Columns\IconColumn::make('is_defective')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('is_defective')
+                    ->formatStateUsing(fn(bool $state): string => $state ? 'Defective' : 'Working')
+                    ->badge()
+                    ->color(fn(bool $state): string => $state ? 'danger' : 'success')
+                    ->icon(fn(bool $state): string => $state ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle'),
                 Tables\Columns\TextColumn::make('date_transferred')
                     ->date(),
             ])
