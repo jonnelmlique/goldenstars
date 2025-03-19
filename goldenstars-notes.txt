@@ -1,6 +1,7 @@
 compsoer install
 
 php artisan migrate
+php artisan migrate:fresh --seed
 
 cp .env.example .env
 nano .env
