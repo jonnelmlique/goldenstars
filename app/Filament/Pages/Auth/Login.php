@@ -38,6 +38,16 @@ class Login extends BaseLogin
 
         $fieldType = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
+        // Check if user exists first
+        $user = \App\Models\User::where($fieldType, $data['login'])->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'data.login' => 'No account found with this ' . $fieldType,
+            ]);
+        }
+
+        // Attempt authentication
         if (
             !Auth::attempt([
                 $fieldType => $data['login'],
@@ -45,12 +55,11 @@ class Login extends BaseLogin
             ], $data['remember'] ?? false)
         ) {
             throw ValidationException::withMessages([
-                'login' => __('filament-panels::pages/auth/login.messages.failed'),
+                'data.password' => 'Incorrect password',
             ]);
         }
 
         session()->regenerate();
-
         return app(LoginResponse::class);
     }
 }

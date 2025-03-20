@@ -66,6 +66,12 @@ class TicketResource extends Resource
                 ->preload()
                 ->label('Assign To')
                 ->visible(fn() => auth()->user()->hasPermission('tickets.assign')),
+            Forms\Components\Grid::make(2)->schema([
+                Forms\Components\TextInput::make('requested_by')
+                    ->label('Requested By')
+                    ->placeholder('Enter name if different from creator')
+                    ->visible(fn() => auth()->user()->hasPermission('tickets.assign')),
+            ]),
         ]);
     }
 
@@ -104,6 +110,10 @@ class TicketResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('requestor.name')
                     ->label('Requestor')
+                    ->formatStateUsing(
+                        fn($record) =>
+                        $record->requested_by ?? $record->requestor->name
+                    )
                     ->searchable(),
                 Tables\Columns\TextColumn::make('assignee.name')
                     ->label('Assignee')

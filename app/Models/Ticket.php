@@ -15,6 +15,7 @@ class Ticket extends Model
         'status',
         'category_id',
         'requestor_id',
+        'requested_by',
         'assignee_id',
         'building_id',
         'department_id',

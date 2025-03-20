@@ -81,7 +81,9 @@
                                                                 </span>
                                                             </td>
                                                             <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $ticket->category->name }}</td>
-                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $ticket->requestor->name }}</td>
+                                                            <td class="px-4 py-2 text-gray-900 dark:text-white">
+                                                                {{ $ticket->requested_by ?? $ticket->requestor->name }}
+                                                            </td>
                                                             <td class="px-4 py-2 text-gray-900 dark:text-white">
                                                                 {{ $ticket->created_at->format('M d, Y') }}
                                                             </td>

@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('app')
             ->path('app') // Change from 'app' to empty string
             ->login(\App\Filament\Pages\Auth\Login::class)
-            ->registration(\App\Filament\Pages\Auth\Register::class)
+                // ->registration(\App\Filament\Pages\Auth\Register::class)
             ->colors([
                 'primary' => Color::Amber,
             ])

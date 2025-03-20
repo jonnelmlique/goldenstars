@@ -50,7 +50,7 @@
         </div>
         <div>
             <div class="text-sm font-medium text-gray-500 mb-1">Requestor</div>
-            <div class="text-base">{{ $ticket->requestor->name }}</div>
+            <div class="text-base">{{ $ticket->requested_by ?? $ticket->requestor->name }}</div>
         </div>
         <div>
             <div class="text-sm font-medium text-gray-500 mb-1">Assignee</div>
