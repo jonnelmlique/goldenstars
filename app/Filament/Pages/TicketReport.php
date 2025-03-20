@@ -138,13 +138,10 @@ class TicketReport extends Page
     {
         return Ticket::query()
             ->with(['category', 'requestor', 'assignee', 'building', 'department', 'rating'])
-            ->select([
-                'tickets.*',
-                \DB::raw('COALESCE(requested_by, users.name) as requestor_name')
-            ])
+            ->select('tickets.*')  // Remove the COALESCE part
             ->leftJoin('users', 'users.id', '=', 'tickets.requestor_id')
             ->when($this->dateRange, function ($q) {
-                $q->whereBetween('tickets.created_at', [   // Specify the table name here
+                $q->whereBetween('tickets.created_at', [
                     Carbon::parse($this->dateRange['from'])->startOfDay(),
                     Carbon::parse($this->dateRange['until'])->endOfDay(),
                 ]);

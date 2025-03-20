@@ -148,7 +148,7 @@
                     <td>{{ $ticket->category->name }}</td>
                     <td>{{ $ticket->building->name }}</td>
                     <td>{{ $ticket->department->name }}</td>
-                    <td>{{ $ticket->requested_by ?? $ticket->requestor->name }}</td>
+                    <td>{{ $ticket->requestor->name }}</td> {{-- Use only requestor relationship --}}
                     <td>{{ $ticket->assignee?->name ?? 'Unassigned' }}</td>
                     <td>{{ $ticket->created_at->format('M d, Y h:i A') }}</td>
                     <td>{{ $ticket->updated_at->format('M d, Y h:i A') }}</td>
