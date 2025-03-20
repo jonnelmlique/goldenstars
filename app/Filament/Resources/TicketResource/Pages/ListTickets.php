@@ -5,7 +5,6 @@ namespace App\Filament\Resources\TicketResource\Pages;
 use App\Filament\Resources\TicketResource;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Actions;
-use App\Models\Ticket;
 
 class ListTickets extends ListRecords
 {
@@ -14,12 +13,7 @@ class ListTickets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->mutateFormDataUsing(function (array $data): array {
-                    $data['requestor_id'] = auth()->id();
-                    $data['status'] = 'open';
-                    return $data;
-                }),
+            Actions\CreateAction::make(),
         ];
     }
 }

@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->enum('status', ['open', 'in_progress', 'resolved', 'completed', 'cancelled']);
             $table->foreignId('category_id')->constrained('ticket_categories');
             $table->foreignId('requestor_id')->constrained('users');
-            $table->string('requested_by')->nullable(); // Add this line
             $table->foreignId('assignee_id')->nullable()->constrained('users');
             $table->foreignId('building_id')->constrained();
             $table->foreignId('department_id')->constrained();

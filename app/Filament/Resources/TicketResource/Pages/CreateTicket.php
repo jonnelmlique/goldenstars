@@ -11,9 +11,12 @@ class CreateTicket extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['requestor_id'] = auth()->id();
-        $data['status'] = 'open';
+        // Only set default requestor if not already set
+        if (!isset($data['requestor_id'])) {
+            $data['requestor_id'] = auth()->id();
+        }
 
+        $data['status'] = 'open';
         return $data;
     }
 }

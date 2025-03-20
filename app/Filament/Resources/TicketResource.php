@@ -56,20 +56,24 @@ class TicketResource extends Resource
                         ->preload()
                         ->required(),
                 ]),
-            Forms\Components\Select::make('assignee_id')
-                ->relationship('assignee', 'name', function ($query) {
-                    return $query->whereHas('department', function ($q) {
-                        $q->where('code', 'IT');
-                    });
-                })
-                ->searchable()
-                ->preload()
-                ->label('Assign To')
-                ->visible(fn() => auth()->user()->hasPermission('tickets.assign')),
             Forms\Components\Grid::make(2)->schema([
-                Forms\Components\TextInput::make('requested_by')
-                    ->label('Requested By')
-                    ->placeholder('Enter name if different from creator')
+                Forms\Components\Select::make('requestor_id')
+                    ->label('Requestor')
+                    ->relationship('requestor', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->default(fn() => auth()->user()->hasPermission('tickets.assign') ? null : auth()->id())
+                    ->disabled(condition: fn() => !auth()->user()->hasPermission('tickets.assign')),
+                Forms\Components\Select::make('assignee_id')
+                    ->relationship('assignee', 'name', function ($query) {
+                        return $query->whereHas('department', function ($q) {
+                            $q->where('code', 'IT');
+                        });
+                    })
+                    ->searchable()
+                    ->preload()
+                    ->label('Assign To')
                     ->visible(fn() => auth()->user()->hasPermission('tickets.assign')),
             ]),
         ]);
@@ -78,57 +82,78 @@ class TicketResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
+            ])
             ->columns([
-                Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('priority')
-                    ->badge()
-                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
-                    ->color(fn(string $state): string => match ($state) {
-                        'high' => 'danger',
-                        'medium' => 'warning',
-                        'low' => 'success',
-                        default => 'gray',
-                    }),
-                Tables\Columns\TextColumn::make('status')
-                    ->badge()
-                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
-                    ->color(fn(string $state): string => match ($state) {
-                        'open' => 'info',
-                        'in_progress' => 'warning',
-                        'resolved' => 'success',
-                        'completed' => 'success',
-                        'cancelled' => 'danger',
-                        default => 'gray',
-                    }),
-                Tables\Columns\TextColumn::make('category.name')
-                    ->label('Category'),
-                Tables\Columns\TextColumn::make('building.name')
-                    ->label('Building')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('department.name')
-                    ->label('Department')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('requestor.name')
-                    ->label('Requestor')
-                    ->formatStateUsing(
-                        fn($record) =>
-                        $record->requested_by ?? $record->requestor->name
-                    )
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('assignee.name')
-                    ->label('Assignee')
-                    ->default('Unassigned')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime('M d, Y h:i A')
-                    ->timezone('Asia/Manila')
-                    ->formatStateUsing(function ($state) {
-                        $date = \Carbon\Carbon::parse($state);
-                        if ($date->isToday()) {
-                            return $date->diffForHumans();
-                        }
-                        return $date->format('M d, Y h:i A');
-                    }),
+                Tables\Columns\Layout\Stack::make([
+                    Tables\Columns\Layout\Panel::make([
+                        Tables\Columns\TextColumn::make('title')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->searchable()
+                            ->description(fn($record) => \Illuminate\Support\Str::limit($record->description, 100)),
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('category.name')
+                                ->icon('heroicon-m-tag')
+                                ->iconColor('success'),
+                            Tables\Columns\TextColumn::make('created_at')
+                                ->since()
+                                ->icon('heroicon-m-clock')
+                                ->color('gray'),
+                        ])->extraAttributes(['class' => 'mt-2']),
+                        Tables\Columns\Layout\Stack::make([
+                            Tables\Columns\Layout\Grid::make(2)->schema([
+                                Tables\Columns\TextColumn::make('status')
+                                    ->badge()
+                                    ->icon(fn(string $state): string => match ($state) {
+                                        'open' => 'heroicon-m-exclamation-circle',
+                                        'in_progress' => 'heroicon-m-play',
+                                        'resolved' => 'heroicon-m-check',
+                                        'completed' => 'heroicon-m-check-circle',
+                                        'cancelled' => 'heroicon-m-x-circle',
+                                        default => 'heroicon-m-question-mark-circle',
+                                    })
+                                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
+                                    ->color(fn(string $state): string => match ($state) {
+                                        'open' => 'info',
+                                        'in_progress' => 'warning',
+                                        'resolved' => 'success',
+                                        'completed' => 'success',
+                                        'cancelled' => 'danger',
+                                        default => 'gray',
+                                    }),
+                                Tables\Columns\TextColumn::make('priority')
+                                    ->badge()
+                                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
+                                    ->color(fn(string $state): string => match ($state) {
+                                        'high' => 'danger',
+                                        'medium' => 'warning',
+                                        'low' => 'success',
+                                        default => 'gray',
+                                    }),
+                            ])->extraAttributes(['class' => 'mt-2']),
+                            Tables\Columns\Layout\Split::make([
+                                Tables\Columns\TextColumn::make('building.name')
+                                    ->icon('heroicon-m-building-office')
+                                    ->iconColor('primary'),
+                                Tables\Columns\TextColumn::make('department.name')
+                                    ->icon('heroicon-m-academic-cap')
+                                    ->iconColor('warning'),
+                            ])->extraAttributes(['class' => 'mt-2']),
+                            Tables\Columns\TextColumn::make('assignee.name')
+                                ->label('Assignee')
+                                ->icon('heroicon-m-user')
+                                ->default('Unassigned')
+                                ->extraAttributes(['class' => 'mt-1'])
+                        ]),
+                        Tables\Columns\Layout\Stack::make([
+                            Tables\Columns\TextColumn::make('')
+                                ->html(fn($record) => view('filament.resources.tickets.card-actions', ['record' => $record])),
+                        ])->extraAttributes(['class' => 'mt-3 pt-3 border-t']),
+                    ])->extraAttributes(['class' => 'bg-white dark:bg-gray-800 shadow-sm rounded-xl p-4 ring-1 ring-gray-950/5 dark:ring-white/10']),
+                ]),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
