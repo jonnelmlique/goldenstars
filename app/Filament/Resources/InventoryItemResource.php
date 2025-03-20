@@ -32,11 +32,13 @@ class InventoryItemResource extends Resource
             Forms\Components\Grid::make(2)->schema([
                 Forms\Components\Select::make('building_id')
                     ->relationship('building', 'name')
-                    ->required()
+                    ->required()   
+                     ->preload()
                     ->searchable(),
                 Forms\Components\Select::make('department_id')
                     ->relationship('department', 'name')
                     ->required()
+                    ->preload()
                     ->searchable(),
             ]),
             Forms\Components\Grid::make(2)->schema([

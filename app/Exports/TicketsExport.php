@@ -65,7 +65,7 @@ class TicketsExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $ticket->category->name,
             $ticket->building->name,
             $ticket->department->name,
-            $ticket->requestor->name,  // Changed to use only requestor name
+            'requestor' => $ticket->requested_by ?? $ticket->requestor->name,
             $ticket->assignee?->name ?? 'Unassigned',
             $ticket->created_at->format('M d, Y h:i A'),
             $ticket->updated_at->format('M d, Y h:i A'),
