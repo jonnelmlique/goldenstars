@@ -88,66 +88,85 @@ class TicketResource extends Resource
             ])
             ->columns([
                 Tables\Columns\Layout\Stack::make([
-                    Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Panel::make(schema: [
+                        // Title and Description
                         Tables\Columns\TextColumn::make('title')
                             ->size('lg')
                             ->weight('bold')
                             ->searchable()
+                            ->extraAttributes(attributes: ['class' => 'mb-2'])
                             ->description(fn($record) => \Illuminate\Support\Str::limit($record->description, 100)),
+
+                        // Status and Priority badges in a split view with no gap
                         Tables\Columns\Layout\Split::make([
-                            Tables\Columns\TextColumn::make('category.name')
-                                ->icon('heroicon-m-tag')
-                                ->iconColor('success'),
-                            Tables\Columns\TextColumn::make('created_at')
-                                ->since()
-                                ->icon('heroicon-m-clock')
-                                ->color('gray'),
-                        ])->extraAttributes(['class' => 'mt-2']),
+                            Tables\Columns\TextColumn::make('status')
+                                ->badge()
+                                ->icon(fn(string $state): string => match ($state) {
+                                    'open' => 'heroicon-m-exclamation-circle',
+                                    'in_progress' => 'heroicon-m-play',
+                                    'resolved' => 'heroicon-m-check',
+                                    'completed' => 'heroicon-m-check-circle',
+                                    'cancelled' => 'heroicon-m-x-circle',
+                                    default => 'heroicon-m-question-mark-circle',
+                                })
+                                ->formatStateUsing(fn(string $state): string => strtoupper($state))
+                                ->color(fn(string $state): string => match ($state) {
+                                    'open' => 'info',
+                                    'in_progress' => 'warning',
+                                    'resolved' => 'success',
+                                    'completed' => 'success',
+                                    'cancelled' => 'danger',
+                                    default => 'gray',
+                                }),
+                            Tables\Columns\TextColumn::make('priority')
+                                ->badge()
+                                ->formatStateUsing(fn(string $state): string => strtoupper($state))
+                                ->color(fn(string $state): string => match ($state) {
+                                    'high' => 'danger',
+                                    'medium' => 'warning',
+                                    'low' => 'success',
+                                    default => 'gray',
+                                }),
+                        ])->extraAttributes(attributes: ['class' => 'gap-1']),
+
+                        // User Information
                         Tables\Columns\Layout\Stack::make([
-                            Tables\Columns\Layout\Grid::make(2)->schema([
-                                Tables\Columns\TextColumn::make('status')
-                                    ->badge()
-                                    ->icon(fn(string $state): string => match ($state) {
-                                        'open' => 'heroicon-m-exclamation-circle',
-                                        'in_progress' => 'heroicon-m-play',
-                                        'resolved' => 'heroicon-m-check',
-                                        'completed' => 'heroicon-m-check-circle',
-                                        'cancelled' => 'heroicon-m-x-circle',
-                                        default => 'heroicon-m-question-mark-circle',
-                                    })
-                                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
-                                    ->color(fn(string $state): string => match ($state) {
-                                        'open' => 'info',
-                                        'in_progress' => 'warning',
-                                        'resolved' => 'success',
-                                        'completed' => 'success',
-                                        'cancelled' => 'danger',
-                                        default => 'gray',
-                                    }),
-                                Tables\Columns\TextColumn::make('priority')
-                                    ->badge()
-                                    ->formatStateUsing(fn(string $state): string => strtoupper($state))
-                                    ->color(fn(string $state): string => match ($state) {
-                                        'high' => 'danger',
-                                        'medium' => 'warning',
-                                        'low' => 'success',
-                                        default => 'gray',
-                                    }),
-                            ])->extraAttributes(['class' => 'mt-2']),
-                            Tables\Columns\Layout\Split::make([
-                                Tables\Columns\TextColumn::make('building.name')
-                                    ->icon('heroicon-m-building-office')
-                                    ->iconColor('primary'),
-                                Tables\Columns\TextColumn::make('department.name')
-                                    ->icon('heroicon-m-academic-cap')
-                                    ->iconColor('warning'),
-                            ])->extraAttributes(['class' => 'mt-2']),
+                            Tables\Columns\TextColumn::make('requestor.name')
+                                ->label('Requestor')
+                                ->icon('heroicon-m-user')
+                                ->default('No Requestor')
+                                ->iconColor('warning'),
                             Tables\Columns\TextColumn::make('assignee.name')
                                 ->label('Assignee')
                                 ->icon('heroicon-m-user')
                                 ->default('Unassigned')
-                                ->extraAttributes(['class' => 'mt-1'])
-                        ]),
+                                ->iconColor('primary'),
+                        ])->extraAttributes(['class' => 'mt-2']),
+
+                        // Location Information
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('building.name')
+                                ->icon('heroicon-m-building-office')
+                                ->iconColor('primary'),
+                            Tables\Columns\TextColumn::make('department.code')
+                                ->icon('heroicon-m-academic-cap')
+                                ->iconColor('warning'),
+                        ])->extraAttributes(['class' => 'mt-2']),
+
+                        // Category
+                        Tables\Columns\TextColumn::make('category.name')
+                            ->icon('heroicon-m-tag')
+                            ->iconColor('success')
+                            ->extraAttributes(['class' => 'mt-2']),
+
+                        // Created At (at the bottom)
+                        Tables\Columns\TextColumn::make('created_at')
+                            ->since()
+                            ->icon('heroicon-m-clock')
+                            ->color('gray')
+                            ->extraAttributes(['class' => 'mt-2']),
+
+                        // Actions
                         Tables\Columns\Layout\Stack::make([
                             Tables\Columns\TextColumn::make('')
                                 ->html(fn($record) => view('filament.resources.tickets.card-actions', ['record' => $record])),
@@ -156,71 +175,86 @@ class TicketResource extends Resource
                 ]),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('view')
-                        ->icon('heroicon-o-eye')
-                        ->modalContent(fn(Ticket $record) => view(
-                            'filament.resources.tickets.view',
-                            ['ticket' => $record]
-                        ))
-                        ->modalSubmitAction(false)
-                        ->modalCancelAction(false),
-                    Tables\Actions\EditAction::make()
-                        ->icon('heroicon-o-pencil'),
-                    Tables\Actions\Action::make('assign')
-                        ->icon('heroicon-o-user-plus')
-                        ->form([
-                            Forms\Components\Select::make('assignee_id')
-                                ->relationship('assignee', 'name', function ($query) {
-                                    return $query->whereHas('department', function ($q) {
-                                        $q->where('code', 'IT');
-                                    });
-                                })
-                                ->required()
-                                ->label('Assign To'),
-                        ])
-                        ->action(function (Ticket $record, array $data): void {
-                            $record->update([
-                                'assignee_id' => $data['assignee_id'],
-                                'status' => 'open'
-                            ]);
-                        })
-                        ->visible(
-                            fn(Ticket $record) =>
-                            $record->status === 'open' &&
-                            auth()->user()->hasPermission('tickets.assign') &&
-                            is_null($record->assignee_id)
-                        )
-                        ->requiresConfirmation(),
-                    Tables\Actions\Action::make('mark_in_progress')
-                        ->icon('heroicon-o-play')
-                        ->action(fn(Ticket $record) => $record->update(['status' => 'in_progress']))
-                        ->visible(fn(Ticket $record) => $record->status === 'open' && auth()->user()->id === $record->assignee_id),
-                    Tables\Actions\Action::make('mark_resolved')
-                        ->icon('heroicon-o-check')
-                        ->action(fn(Ticket $record) => $record->update(['status' => 'resolved']))
-                        ->visible(fn(Ticket $record) => $record->status === 'in_progress' && auth()->user()->id === $record->assignee_id),
-                    Tables\Actions\Action::make('mark_completed')
-                        ->icon('heroicon-o-check-circle')
-                        ->form([
-                            Forms\Components\Select::make('rating')
-                                ->options([
-                                    1 => '⭐ Poor',
-                                    2 => '⭐⭐ Fair',
-                                    3 => '⭐⭐⭐ Good',
-                                    4 => '⭐⭐⭐⭐ Very Good',
-                                    5 => '⭐⭐⭐⭐⭐ Excellent',
-                                ])
-                                ->required(),
-                            Forms\Components\Textarea::make('comment')
-                                ->label('Feedback'),
-                        ])
-                        ->action(function (Ticket $record, array $data): void {
-                            $record->update(['status' => 'completed']);
-                            $record->rating()->create($data);
-                        })
-                        ->visible(fn(Ticket $record) => $record->canBeMarkedAsCompleted() && auth()->user()->id === $record->requestor_id),
-                ])
+                Tables\Actions\Action::make('view')
+                    ->icon('heroicon-m-eye')
+                    ->button()
+                    ->size('sm')
+                    ->modalContent(fn(Ticket $record) => view(
+                        'filament.resources.tickets.view',
+                        ['ticket' => $record]
+                    ))
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->modalWidth('4xl'),
+                Tables\Actions\EditAction::make()
+                    ->button()
+                    ->size('sm')
+                    ->icon('heroicon-m-pencil'),
+                Tables\Actions\Action::make('assign')
+                    ->button()
+                    ->size('sm')
+                    ->color('info')
+                    ->icon('heroicon-m-user-plus')
+                    ->form([
+                        Forms\Components\Select::make('assignee_id')
+                            ->relationship('assignee', 'name', function ($query) {
+                                return $query->whereHas('department', function ($q) {
+                                    $q->where('code', 'IT');
+                                });
+                            })
+                            ->required()
+                            ->label('Assign To'),
+                    ])
+                    ->action(function (Ticket $record, array $data): void {
+                        $record->update([
+                            'assignee_id' => $data['assignee_id'],
+                            'status' => 'open'
+                        ]);
+                    })
+                    ->visible(
+                        fn(Ticket $record) =>
+                        $record->status === 'open' &&
+                        auth()->user()->hasPermission('tickets.assign') &&
+                        is_null($record->assignee_id)
+                    )
+                    ->requiresConfirmation(),
+                Tables\Actions\Action::make('mark_in_progress')
+                    ->button()
+                    ->size('sm')
+                    ->color('warning')
+                    ->icon('heroicon-m-play')
+                    ->visible(fn(Ticket $record) => $record->status === 'open' && auth()->user()->id === $record->assignee_id)
+                    ->action(fn(Ticket $record) => $record->update(['status' => 'in_progress'])),
+                Tables\Actions\Action::make('mark_resolved')
+                    ->button()
+                    ->size('sm')
+                    ->color('success')
+                    ->icon('heroicon-m-check')
+                    ->visible(fn(Ticket $record) => $record->status === 'in_progress' && auth()->user()->id === $record->assignee_id)
+                    ->action(fn(Ticket $record) => $record->update(['status' => 'resolved'])),
+                Tables\Actions\Action::make('mark_completed')
+                    ->button()
+                    ->size('sm')
+                    ->color('success')
+                    ->icon('heroicon-m-check-circle')
+                    ->form([
+                        Forms\Components\Select::make('rating')
+                            ->options([
+                                1 => '⭐ Poor',
+                                2 => '⭐⭐ Fair',
+                                3 => '⭐⭐⭐ Good',
+                                4 => '⭐⭐⭐⭐ Very Good',
+                                5 => '⭐⭐⭐⭐⭐ Excellent',
+                            ])
+                            ->required(),
+                        Forms\Components\Textarea::make('comment')
+                            ->label('Feedback'),
+                    ])
+                    ->action(function (Ticket $record, array $data): void {
+                        $record->update(['status' => 'completed']);
+                        $record->rating()->create($data);
+                    })
+                    ->visible(fn(Ticket $record) => $record->canBeMarkedAsCompleted() && auth()->user()->id === $record->requestor_id),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
