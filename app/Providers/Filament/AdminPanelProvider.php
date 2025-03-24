@@ -20,6 +20,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\Pages\Profile;
 use App\Filament\Pages\ChangePassword;
+use Illuminate\Support\HtmlString;  // Add this import at the top
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -30,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('app')
             ->path('app') // Change from 'app' to empty string
             ->login(\App\Filament\Pages\Auth\Login::class)
-                // ->registration(\App\Filament\Pages\Auth\Register::class)
+            // ->registration(\App\Filament\Pages\Auth\Register::class)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -41,10 +42,10 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Pages\CompleteProfile::class,
                 \App\Filament\Pages\Profile::class,
                 \App\Filament\Pages\ChangePassword::class,
+                \App\Filament\Pages\WarehouseView::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
                 \App\Filament\Widgets\TicketStatsOverview::class,
                 \App\Filament\Widgets\TicketsChart::class,
                 \App\Filament\Widgets\TicketsByStatusChart::class,
@@ -80,6 +81,19 @@ class AdminPanelProvider extends PanelProvider
                 'Configuration',
                 'Users',
                 'Account Settings',
-            ]);
+                'Warehouse',
+            ])
+            ->resources([
+                \App\Filament\Resources\WarehouseLocationResource::class,
+                \App\Filament\Resources\WarehouseShelfResource::class,
+                \App\Filament\Resources\WarehouseInventoryResource::class,
+            ])
+            ->renderHook(
+                'panels::scripts.after',
+                fn() => new HtmlString('
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+                ')
+            );
     }
 }
