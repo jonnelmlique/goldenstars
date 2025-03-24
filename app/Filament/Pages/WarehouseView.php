@@ -10,7 +10,7 @@ class WarehouseView extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';
     protected static string $view = 'filament.pages.warehouse-view';
-    protected static ?string $navigationLabel = '3D Warehouse View';
+    protected static ?string $navigationLabel = 'Warehouse Inventory';
     protected static ?int $navigationSort = 4;
     public $locations;
     public $warehouseInventory;
