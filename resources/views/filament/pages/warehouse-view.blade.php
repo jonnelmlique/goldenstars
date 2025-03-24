@@ -20,21 +20,25 @@
         {{-- Modal --}}
         <div id="shelf-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true"></div>
-            
+
             <div class="fixed inset-0 z-10 overflow-y-auto">
                 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+                    <div
+                        class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
                         <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-                            <button type="button" onclick="closeShelfModal()" class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none mb-4">
+                            <button type="button" onclick="closeShelfModal()"
+                                class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none mb-4">
                                 <span class="sr-only">Close</span>
-                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
                         <div class="sm:flex sm:items-start">
                             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                <h3 id="modal-title" class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100"></h3>
+                                <h3 id="modal-title"
+                                    class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100"></h3>
                                 <div id="modal-content" class="mt-4"></div>
                             </div>
                         </div>
@@ -48,14 +52,14 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <script>
             // Make these functions globally available
-            window.closeShelfModal = function() {
+            window.closeShelfModal = function () {
                 const modal = document.getElementById('shelf-modal');
                 if (modal) {
                     modal.classList.add('hidden');
                 }
             };
 
-            window.handleOutsideClick = function(event) {
+            window.handleOutsideClick = function (event) {
                 const modal = document.getElementById('shelf-modal');
                 const modalContent = modal.querySelector('.rounded-lg');
                 if (event.target === modal) {
@@ -63,13 +67,13 @@
                 }
             };
 
-            window.handleEscapeKey = function(event) {
+            window.handleEscapeKey = function (event) {
                 if (event.key === 'Escape') {
                     closeShelfModal();
                 }
             };
 
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const canvas = document.getElementById('three-canvas');
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
@@ -95,14 +99,48 @@
                     createLocation(scene, location);
                 });
 
-                // Position camera
-                camera.position.set(20, 20, 20);
+                // Configure camera
+                camera.position.set(30, 20, 30);
                 camera.lookAt(0, 0, 0);
 
-                // Add OrbitControls
+                // Enhanced OrbitControls configuration
                 const controls = new THREE.OrbitControls(camera, renderer.domElement);
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.05;
+                controls.rotateSpeed = 0.5; // Slower rotation for more control
+                controls.panSpeed = 0.5; // Slower panning
+                controls.zoomSpeed = 0.8; // Slightly slower zoom
+
+                // Set control limits
+                controls.minDistance = 10; // Minimum zoom distance
+                controls.maxDistance = 50; // Maximum zoom distance
+                controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation to horizon
+                controls.minPolarAngle = 0; // Limit vertical rotation looking up
+
+                // Remove the viewButtons section and all related code
+
+                // Add touch support for mobile
+                renderer.domElement.addEventListener('touchstart', onTouchStart, false);
+                renderer.domElement.addEventListener('touchmove', onTouchMove, false);
+
+                let touchStart = new THREE.Vector2();
+
+                function onTouchStart(event) {
+                    event.preventDefault();
+                    const touch = event.touches[0];
+                    touchStart.set(touch.clientX, touch.clientY);
+                }
+
+                function onTouchMove(event) {
+                    event.preventDefault();
+                    const touch = event.touches[0];
+                    const deltaX = touch.clientX - touchStart.x;
+                    const deltaY = touch.clientY - touchStart.y;
+
+                    touchStart.set(touch.clientX, touch.clientY);
+                    controls.rotateLeft(deltaX * 0.005);
+                    controls.rotateUp(deltaY * 0.005);
+                }
 
                 // Animation loop
                 function animate() {
@@ -112,43 +150,90 @@
                 }
 
                 function createLocation(scene, location) {
-                    // Create location container
                     const container = new THREE.Group();
                     container.position.set(location.x_position, 0, location.z_position);
 
-                    // Create floor for this location
-                    const floorGeometry = new THREE.PlaneGeometry(4, 4);
-                    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                    // Create enhanced floor with grid pattern
+                    const floorSize = 4;
+                    const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
+                    const floorMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xe0e0e0,
+                        metalness: 0.2,
+                        roughness: 0.8
+                    });
                     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
                     floor.rotation.x = -Math.PI / 2;
                     container.add(floor);
 
-                    // Add location label
+                    // Add detailed grid
+                    const gridHelper = new THREE.GridHelper(floorSize, 8, 0x888888, 0xcccccc);
+                    gridHelper.position.y = 0.01;
+                    container.add(gridHelper);
+
+                    // Add floor border
+                    const borderGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(floorSize, 0.1, floorSize));
+                    const borderMaterial = new THREE.LineBasicMaterial({ color: 0x2196f3, linewidth: 2 });
+                    const border = new THREE.LineSegments(borderGeometry, borderMaterial);
+                    border.position.y = 0.01;
+                    container.add(border);
+
+                    // Add location label with improved visuals
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
-                    canvas.width = 256;
-                    canvas.height = 64;
-                    context.fillStyle = '#ffffff';
+                    canvas.width = 512; // Increased resolution
+                    canvas.height = 128;
+
+                    // Create gradient background
+                    const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, '#2196f3');
+                    gradient.addColorStop(1, '#1976d2');
+                    context.fillStyle = gradient;
                     context.fillRect(0, 0, canvas.width, canvas.height);
-                    context.font = 'bold 24px Arial';
-                    context.fillStyle = '#000000';
+
+                    // Add text with shadow
+                    context.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                    context.shadowBlur = 4;
+                    context.shadowOffsetX = 2;
+                    context.shadowOffsetY = 2;
+                    context.font = 'bold 48px Arial';
+                    context.fillStyle = '#ffffff';
                     context.textAlign = 'center';
                     context.textBaseline = 'middle';
                     context.fillText(location.name, canvas.width / 2, canvas.height / 2);
+                    context.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    context.font = '24px Arial';
+                    context.fillText(location.code, canvas.width / 2, canvas.height * 0.75);
 
                     const texture = new THREE.CanvasTexture(canvas);
                     const labelGeometry = new THREE.PlaneGeometry(2, 0.5);
                     const labelMaterial = new THREE.MeshBasicMaterial({
                         map: texture,
                         transparent: true,
-                        side: THREE.DoubleSide
+                        side: THREE.DoubleSide,
+                        depthWrite: false
                     });
                     const label = new THREE.Mesh(labelGeometry, labelMaterial);
-                    label.position.set(0, 2.5, 0); // Position above the shelves
-                    label.rotation.x = -Math.PI / 4; // Tilt for better visibility
+                    label.position.set(0, 3, 0);
+                    label.rotation.x = -Math.PI / 4;
                     container.add(label);
 
-                    // Create shelves with location reference
+                    // Add corner pillars for visual reference
+                    const pillarGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 8);
+                    const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0x2196f3 });
+                    const corners = [
+                        [-floorSize / 2, floorSize / 2],
+                        [floorSize / 2, floorSize / 2],
+                        [-floorSize / 2, -floorSize / 2],
+                        [floorSize / 2, -floorSize / 2]
+                    ];
+
+                    corners.forEach(([x, z]) => {
+                        const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+                        pillar.position.set(x, 0.25, z);
+                        container.add(pillar);
+                    });
+
+                    // Create shelves
                     location.shelves.forEach((shelf, index) => {
                         // Attach location data to shelf
                         shelf.location = {
@@ -174,33 +259,49 @@
                 function createShelf(shelf, index) {
                     const shelfGroup = new THREE.Group();
 
-                    // Create shelf base structure
-                    const baseGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.8);
-                    const baseMaterial = new THREE.MeshStandardMaterial({ color: 0x606060 });
+                    // Adjusted dimensions for better stability
+                    const baseGeometry = new THREE.BoxGeometry(1.5, 0.05, 0.8);
+                    const baseMaterial = new THREE.MeshStandardMaterial({
+                        color: 0x606060,
+                        metalness: 0.3,
+                        roughness: 0.7
+                    });
 
-                    // Create vertical supports
-                    const supportGeometry = new THREE.BoxGeometry(0.1, 2, 0.8);
-                    const supportMaterial = new THREE.MeshStandardMaterial({ color: 0x404040 });
+                    // Thinner supports with proper height
+                    const supportGeometry = new THREE.BoxGeometry(0.05, 2, 0.05);
+                    const supportMaterial = new THREE.MeshStandardMaterial({
+                        color: 0x404040,
+                        metalness: 0.5,
+                        roughness: 0.5
+                    });
 
-                    // Create shelf levels
+                    // Create shelf levels with precise spacing
                     const levels = 4;
-                    const levelHeight = 0.5;
+                    const levelSpacing = 0.5; // Consistent spacing
+                    const totalHeight = levelSpacing * (levels - 1);
 
-                    // Add vertical supports
-                    const leftSupport = new THREE.Mesh(supportGeometry, supportMaterial);
-                    const rightSupport = new THREE.Mesh(supportGeometry, supportMaterial);
-                    leftSupport.position.set(-0.7, 1, 0);
-                    rightSupport.position.set(0.7, 1, 0);
-                    shelfGroup.add(leftSupport);
-                    shelfGroup.add(rightSupport);
+                    // Add supports at each corner
+                    const supportPositions = [
+                        { x: -0.7, z: -0.35 }, // Front left
+                        { x: 0.7, z: -0.35 },  // Front right
+                        { x: -0.7, z: 0.35 },  // Back left
+                        { x: 0.7, z: 0.35 }    // Back right
+                    ];
 
-                    // Add shelf levels
+                    supportPositions.forEach(pos => {
+                        const support = new THREE.Mesh(supportGeometry, supportMaterial);
+                        support.position.set(pos.x, 1, pos.z);
+                        shelfGroup.add(support);
+                    });
+
+                    // Add shelf levels with precise positioning
                     for (let i = 0; i < levels; i++) {
                         const levelMesh = new THREE.Mesh(baseGeometry, baseMaterial);
-                        levelMesh.position.set(0, i * levelHeight, 0);
+                        const yPosition = i * levelSpacing;
+                        levelMesh.position.set(0, yPosition, 0);
                         shelfGroup.add(levelMesh);
 
-                        // Add shelf label
+                        // Add shelf label with adjusted position
                         const labelCanvas = document.createElement('canvas');
                         const ctx = labelCanvas.getContext('2d');
                         labelCanvas.width = 128;
@@ -221,23 +322,23 @@
                             side: THREE.DoubleSide
                         });
                         const label = new THREE.Mesh(labelGeometry, labelMaterial);
-                        label.position.set(0.8, i * levelHeight + 0.1, 0.41);
+                        label.position.set(0.8, yPosition + 0.1, 0.41);
                         shelfGroup.add(label);
 
-                        // Add items on this level if they exist
+                        // Add items with proper alignment
                         const levelItems = shelf.items.filter(item => item.shelf_position === i + 1);
                         levelItems.forEach((item, itemIndex) => {
                             const itemMesh = createInventoryItem(item);
                             itemMesh.position.set(
                                 -0.5 + (itemIndex * 0.25),
-                                i * levelHeight + 0.15,
+                                yPosition + 0.075, // Half height of items
                                 0
                             );
                             shelfGroup.add(itemMesh);
                         });
                     }
 
-                    // Position the entire shelf unit
+                    // Rest of the existing shelf creation code
                     shelfGroup.position.set(
                         (index % 2) * 2 - 1,
                         0,
@@ -353,60 +454,60 @@
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                <span>Code: ${shelf.code}</span>
-                                <span>Level: ${shelf.level}</span>
-                                <span>Capacity: ${shelf.capacity} units</span>
-                            </div>
-                            
-                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead class="text  -xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3">Item Name</th>
-                                            <th scope="col" class="px-6 py-3">SKU</th>
-                                            <th scope="col" class="px-6 py-3">Description</th>
-                                            <th scope="col" class="px-6 py-3">Position</th>
-                                            <th scope="col" class="px-6 py-3 text-right">Quantity</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
+                                        <div class="space-y-4">
+                                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                <span>Code: ${shelf.code}</span>
+                                                <span>Level: ${shelf.level}</span>
+                                                <span>Capacity: ${shelf.capacity} units</span>
+                                            </div>
+
+                                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                    <thead class="text  -xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                        <tr>
+                                                            <th scope="col" class="px-6 py-3">Item Name</th>
+                                                            <th scope="col" class="px-6 py-3">SKU</th>
+                                                            <th scope="col" class="px-6 py-3">Description</th>
+                                                            <th scope="col" class="px-6 py-3">Position</th>
+                                                            <th scope="col" class="px-6 py-3 text-right">Quantity</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        ${item.name}
-                                    </th>
-                                    <td class="px-6 py-4">${item.sku}</td>
-                                    <td class="px-6 py-4">${item.description || '-'}</td>
-                                    <td class="px-6 py-4">Level ${item.shelf_position}</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                            ${item.quantity} ${item.unit}
-                                        </span>
-                                    </td>
-                                </tr>
-                            `;
+                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                                        ${item.name}
+                                                    </th>
+                                                    <td class="px-6 py-4">${item.sku}</td>
+                                                    <td class="px-6 py-4">${item.description || '-'}</td>
+                                                    <td class="px-6 py-4">Level ${item.shelf_position}</td>
+                                                    <td class="px-6 py-4 text-right">
+                                                        <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                            ${item.quantity} ${item.unit}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            `;
                         });
                     } else {
                         html += `
-                            <tr class="bg-white dark:bg-gray-800">
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                    No items on this shelf
-                                </td>
-                            </tr>
-                        `;
+                                            <tr class="bg-white dark:bg-gray-800">
+                                                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                                    No items on this shelf
+                                                </td>
+                                            </tr>
+                                        `;
                     }
 
                     html += `
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>`;
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');
@@ -492,13 +593,16 @@
             #shelf-modal {
                 z-index: 100;
             }
+
             #shelf-modal .bg-gray-500\/75 {
                 backdrop-filter: blur(4px);
             }
+
             #location-info {
                 z-index: 1000;
                 pointer-events: none;
             }
+
             .modal-open {
                 overflow: hidden;
             }
