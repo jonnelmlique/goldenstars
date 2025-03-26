@@ -15,8 +15,8 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Configuration';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationGroup = 'IT';
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {
@@ -93,6 +93,29 @@ class RoleResource extends Resource
                                 ->options($getPermissionsByGroup('Inventory'))
                                 ->columns(2)
                                 ->gridDirection('row'),
+                        ]),
+                    Forms\Components\Tabs\Tab::make('Warehouse')
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->relationship('permissions', 'name')
+                                ->options($getPermissionsByGroup('Warehouse'))
+                                ->columns(2)
+                                ->gridDirection('row')
+                                ->descriptions([
+                                    'warehouse.view' => 'Can view warehouse 3D visualization',
+                                    'warehouse.inventory.view' => 'Can view warehouse inventory',
+                                    'warehouse.inventory.create' => 'Can create warehouse inventory',
+                                    'warehouse.inventory.edit' => 'Can edit warehouse inventory',
+                                    'warehouse.inventory.delete' => 'Can delete warehouse inventory',
+                                    'warehouse.locations.view' => 'Can view warehouse locations',
+                                    'warehouse.locations.create' => 'Can create warehouse locations',
+                                    'warehouse.locations.edit' => 'Can edit warehouse locations',
+                                    'warehouse.locations.delete' => 'Can delete warehouse locations',
+                                    'warehouse.shelves.view' => 'Can view warehouse shelves',
+                                    'warehouse.shelves.create' => 'Can create warehouse shelves',
+                                    'warehouse.shelves.edit' => 'Can edit warehouse shelves',
+                                    'warehouse.shelves.delete' => 'Can delete warehouse shelves',
+                                ]),
                         ]),
                 ])
                 ->columnSpanFull(),

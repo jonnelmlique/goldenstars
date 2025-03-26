@@ -17,7 +17,8 @@ class TicketReport extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationLabel = 'Export Tickets Reports';
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $navigationGroup = 'IT';
+    protected static ?int $navigationSort = 8;
     protected static string $view = 'filament.pages.ticket-report';
 
     public $dateRange = [];

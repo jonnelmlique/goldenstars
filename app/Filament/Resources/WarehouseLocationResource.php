@@ -8,12 +8,14 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class WarehouseLocationResource extends Resource
 {
     protected static ?string $model = WarehouseLocation::class;
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
     protected static ?string $navigationGroup = 'Warehouse';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -60,5 +62,25 @@ class WarehouseLocationResource extends Resource
             'create' => \App\Filament\Resources\WarehouseLocationResource\Pages\CreateWarehouseLocation::route('/create'),
             'edit' => \App\Filament\Resources\WarehouseLocationResource\Pages\EditWarehouseLocation::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.locations.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.locations.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('warehouse.locations.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('warehouse.locations.delete');
     }
 }

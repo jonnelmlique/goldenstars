@@ -65,23 +65,23 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->navigationItems([
-                \Filament\Navigation\NavigationItem::make('Profile')
+            ->userMenuItems(items: [
+                MenuItem::make()
+                    ->label('Profile')
                     ->icon('heroicon-o-user')
-                    ->url(fn() => \App\Filament\Pages\Profile::getUrl())
-                    ->group('Account Settings')
-                    ->sort(1),
-                \Filament\Navigation\NavigationItem::make('Change Password')
+                    ->url(fn() => Profile::getUrl()),
+                MenuItem::make()
+                    ->label('Change Password')
                     ->icon('heroicon-o-key')
-                    ->url(fn() => \App\Filament\Pages\ChangePassword::getUrl())
-                    ->group('Account Settings')
-                    ->sort(2),
+                    ->url(fn() => ChangePassword::getUrl()),
+            ])
+            ->navigationItems([
+                // Remove the Profile and Change Password navigation items
             ])
             ->navigationGroups([
-                'Configuration',
-                'Users',
-                'Account Settings',
+                'IT',
                 'Warehouse',
+                'Account Settings',
             ])
             ->resources([
                 \App\Filament\Resources\WarehouseLocationResource::class,

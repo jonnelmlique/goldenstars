@@ -11,15 +11,23 @@ class WarehouseView extends Page
     protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';
     protected static string $view = 'filament.pages.warehouse-view';
     protected static ?string $navigationLabel = 'Warehouse View';
-    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Warehouse';
+    protected static ?int $navigationSort = 1;
     public $locations;
     public $warehouseInventory;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.view');
+    }
+
     public function mount()
     {
+        if (!auth()->user()->hasPermission('warehouse.view')) {
+            return redirect()->back();
+        }
+
         $this->locations = WarehouseLocation::with(['shelves.items'])->get();
         $this->warehouseInventory = WarehouseInventory::with(['shelf.location'])->get();
     }
-
-
 }

@@ -11,10 +11,10 @@ use Livewire\Attributes\Property;
 class Profile extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-user';
-    protected static bool $shouldRegisterNavigation = true;
+    protected static bool $shouldRegisterNavigation = false;  // Set to false
     protected static ?string $navigationGroup = 'Account Settings';
     protected static ?int $navigationSort = 1;
-    protected static string $view = 'filament.pages.profile';  // Changed view path
+    protected static string $view = 'filament.pages.profile';
 
     #[Property]
     public array $data = [];

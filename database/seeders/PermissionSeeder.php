@@ -47,6 +47,27 @@ class PermissionSeeder extends Seeder
             ['name' => 'inventory.create', 'group' => 'Inventory'],
             ['name' => 'inventory.edit', 'group' => 'Inventory'],
             ['name' => 'inventory.delete', 'group' => 'Inventory'],
+
+            // Warehouse View
+            ['name' => 'warehouse.view', 'group' => 'Warehouse'],
+
+            // Warehouse Inventory
+            ['name' => 'warehouse.inventory.view', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.inventory.create', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.inventory.edit', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.inventory.delete', 'group' => 'Warehouse'],
+
+            // Warehouse Locations
+            ['name' => 'warehouse.locations.view', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.locations.create', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.locations.edit', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.locations.delete', 'group' => 'Warehouse'],
+
+            // Warehouse Shelves
+            ['name' => 'warehouse.shelves.view', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.shelves.create', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.shelves.edit', 'group' => 'Warehouse'],
+            ['name' => 'warehouse.shelves.delete', 'group' => 'Warehouse'],
         ];
 
         foreach ($permissions as $permission) {

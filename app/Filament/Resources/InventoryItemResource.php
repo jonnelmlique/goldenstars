@@ -15,8 +15,8 @@ class InventoryItemResource extends Resource
 {
     protected static ?string $model = InventoryItem::class;
     protected static ?string $navigationIcon = 'heroicon-o-cube';
-    protected static ?string $navigationGroup = null; // Remove from Inventory group
-    protected static ?int $navigationSort = 3; // Set to 3 (after tickets which is 2)
+    protected static ?string $navigationGroup = 'IT';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

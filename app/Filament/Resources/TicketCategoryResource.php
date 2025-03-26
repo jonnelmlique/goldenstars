@@ -15,8 +15,8 @@ class TicketCategoryResource extends Resource
 {
     protected static ?string $model = TicketCategory::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup = 'Configuration';
-    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'IT';
+    protected static ?int $navigationSort = 6;
 
     public static function canViewAny(): bool
     {

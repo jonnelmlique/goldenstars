@@ -8,12 +8,14 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class WarehouseShelfResource extends Resource
 {
     protected static ?string $model = WarehouseShelf::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Warehouse';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -60,6 +62,26 @@ class WarehouseShelfResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ]);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.shelves.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.shelves.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('warehouse.shelves.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('warehouse.shelves.delete');
     }
 
     public static function getPages(): array

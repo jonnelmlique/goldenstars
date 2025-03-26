@@ -8,12 +8,14 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class WarehouseInventoryResource extends Resource
 {
     protected static ?string $model = WarehouseInventory::class;
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?string $navigationGroup = 'Warehouse';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -69,6 +71,26 @@ class WarehouseInventoryResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ]);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.inventory.view');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermission('warehouse.inventory.create');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermission('warehouse.inventory.edit');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermission('warehouse.inventory.delete');
     }
 
     public static function getPages(): array
