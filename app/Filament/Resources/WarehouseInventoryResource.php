@@ -36,8 +36,6 @@ class WarehouseInventoryResource extends Resource
                 })
                 ->required()
                 ->searchable(),
-            Forms\Components\TextInput::make('grade')
-                ->required(),
             Forms\Components\TextInput::make('bom_unit')
                 ->label('BOM Unit')
                 ->required(),
