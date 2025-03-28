@@ -20,7 +20,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\Pages\Profile;
 use App\Filament\Pages\ChangePassword;
-use Illuminate\Support\HtmlString;  // Add this import at the top
+use Illuminate\Support\HtmlString;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -29,9 +29,8 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('app')
-            ->path('app') // Change from 'app' to empty string
+            ->path('app')
             ->login(\App\Filament\Pages\Auth\Login::class)
-            // ->registration(\App\Filament\Pages\Auth\Register::class)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -90,10 +89,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::scripts.after',
-                fn() => new HtmlString('
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-                ')
+                fn() => new HtmlString('@vite(["resources/js/app.js"])')
             );
     }
 }

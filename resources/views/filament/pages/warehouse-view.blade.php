@@ -32,7 +32,7 @@
                             <h3 id="modal-title"
                                 class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100 flex-1 text-center">
                             </h3>
-                            <button type="button" onclick="closeShelfModal()"
+                            <button type="button" onclick="window.closeShelfModal()"
                                 class="rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 p-2 text-gray-400 hover:text-gray-500 focus:outline-none">
                                 <span class="sr-only">Close</span>
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -49,35 +49,37 @@
     </div>
 
     @push('scripts')
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        @vite(['resources/js/app.js'])
         <script>
-            // Make these functions globally available
-            window.closeShelfModal = function () {
-                const modal = document.getElementById('shelf-modal');
-                if (modal) {
-                    modal.classList.add('hidden');
+            // Expose modal functions globally
+            window.handleEscapeKey = function (event) {
+                if (event.key === 'Escape') {
+                    window.closeShelfModal();
                 }
             };
 
             window.handleOutsideClick = function (event) {
                 const modal = document.getElementById('shelf-modal');
                 const modalContent = modal.querySelector('.rounded-lg');
-                if (event.target === modal) {
-                    closeShelfModal();
+                if (event.target === modal || !modalContent.contains(event.target)) {
+                    window.closeShelfModal();
                 }
             };
 
-            window.handleEscapeKey = function (event) {
-                if (event.key === 'Escape') {
-                    closeShelfModal();
+            window.closeShelfModal = function () {
+                const modal = document.getElementById('shelf-modal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.removeEventListener('keydown', window.handleEscapeKey);
+                    document.removeEventListener('click', window.handleOutsideClick);
                 }
             };
 
             document.addEventListener('DOMContentLoaded', function () {
                 const canvas = document.getElementById('three-canvas');
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-                const renderer = new THREE.WebGLRenderer({
+                const scene = new window.THREE.Scene();
+                const camera = new window.THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+                const renderer = new window.THREE.WebGLRenderer({
                     canvas: canvas,
                     antialias: true
                 });
@@ -86,10 +88,10 @@
                 renderer.setClearColor(0xf0f0f0);
 
                 // Add lighting
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);
                 scene.add(ambientLight);
 
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);
                 directionalLight.position.set(10, 10, 10);
                 scene.add(directionalLight);
 
@@ -103,8 +105,8 @@
                 camera.position.set(30, 20, 30);
                 camera.lookAt(0, 0, 0);
 
-                // Enhanced OrbitControls configuration
-                const controls = new THREE.OrbitControls(camera, renderer.domElement);
+                // Fix OrbitControls initialization
+                const controls = new window.OrbitControls(camera, renderer.domElement);
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.05;
                 controls.rotateSpeed = 0.5; // Slower rotation for more control
@@ -120,27 +122,42 @@
                 // Remove the viewButtons section and all related code
 
                 // Add touch support for mobile
-                renderer.domElement.addEventListener('touchstart', onTouchStart, false);
-                renderer.domElement.addEventListener('touchmove', onTouchMove, false);
-
-                let touchStart = new THREE.Vector2();
+                let touchStartX, touchStartY;
 
                 function onTouchStart(event) {
-                    event.preventDefault();
-                    const touch = event.touches[0];
-                    touchStart.set(touch.clientX, touch.clientY);
+                    if (event.touches.length === 1) {
+                        const touch = event.touches[0];
+                        touchStartX = touch.clientX;
+                        touchStartY = touch.clientY;
+                    }
                 }
 
                 function onTouchMove(event) {
-                    event.preventDefault();
-                    const touch = event.touches[0];
-                    const deltaX = touch.clientX - touchStart.x;
-                    const deltaY = touch.clientY - touchStart.y;
+                    if (event.touches.length === 1) {
+                        const touch = event.touches[0];
 
-                    touchStart.set(touch.clientX, touch.clientY);
-                    controls.rotateLeft(deltaX * 0.005);
-                    controls.rotateUp(deltaY * 0.005);
+                        // Calculate rotation angles
+                        const deltaX = (touch.clientX - touchStartX) * 0.01;
+                        const deltaY = (touch.clientY - touchStartY) * 0.01;
+
+                        // Update camera rotation
+                        const rotationMatrix = new THREE.Matrix4();
+                        rotationMatrix.makeRotationY(-deltaX);
+                        const cameraPosition = new THREE.Vector3();
+                        camera.getWorldPosition(cameraPosition);
+                        cameraPosition.applyMatrix4(rotationMatrix);
+                        camera.position.copy(cameraPosition);
+                        camera.lookAt(scene.position);
+
+                        // Store current position for next frame
+                        touchStartX = touch.clientX;
+                        touchStartY = touch.clientY;
+                    }
                 }
+
+                // Add touch event listeners with proper options
+                renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: true });
+                renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: true });
 
                 // Animation loop
                 function animate() {
@@ -150,30 +167,30 @@
                 }
 
                 function createLocation(scene, location) {
-                    const container = new THREE.Group();
+                    const container = new window.THREE.Group();
                     container.position.set(location.x_position, 0, location.z_position);
 
                     // Create enhanced floor with grid pattern
                     const floorSize = 7;
-                    const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
-                    const floorMaterial = new THREE.MeshStandardMaterial({
+                    const floorGeometry = new window.THREE.PlaneGeometry(floorSize, floorSize);
+                    const floorMaterial = new window.THREE.MeshStandardMaterial({
                         color: 0xe0e0e0,
                         metalness: 0.2,
                         roughness: 0.8
                     });
-                    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                    const floor = new window.THREE.Mesh(floorGeometry, floorMaterial);
                     floor.rotation.x = -Math.PI / 2;
                     container.add(floor);
 
                     // Add detailed grid
-                    const gridHelper = new THREE.GridHelper(floorSize, 8, 0x888888, 0xcccccc);
+                    const gridHelper = new window.THREE.GridHelper(floorSize, 8, 0x888888, 0xcccccc);
                     gridHelper.position.y = 0.01;
                     container.add(gridHelper);
 
                     // Add floor border
-                    const borderGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(floorSize, 0.1, floorSize));
-                    const borderMaterial = new THREE.LineBasicMaterial({ color: 0x2196f3, linewidth: 2 });
-                    const border = new THREE.LineSegments(borderGeometry, borderMaterial);
+                    const borderGeometry = new window.THREE.EdgesGeometry(new window.THREE.BoxGeometry(floorSize, 0.1, floorSize));
+                    const borderMaterial = new window.THREE.LineBasicMaterial({ color: 0x2196f3, linewidth: 2 });
+                    const border = new window.THREE.LineSegments(borderGeometry, borderMaterial);
                     border.position.y = 0.01;
                     container.add(border);
 
@@ -204,22 +221,22 @@
                     context.font = '24px Arial';
                     context.fillText(location.code, canvas.width / 2, canvas.height * 0.75);
 
-                    const texture = new THREE.CanvasTexture(canvas);
-                    const labelGeometry = new THREE.PlaneGeometry(2, 0.5);
-                    const labelMaterial = new THREE.MeshBasicMaterial({
+                    const texture = new window.THREE.CanvasTexture(canvas);
+                    const labelGeometry = new window.THREE.PlaneGeometry(2, 0.5);
+                    const labelMaterial = new window.THREE.MeshBasicMaterial({
                         map: texture,
                         transparent: true,
-                        side: THREE.DoubleSide,
+                        side: window.THREE.DoubleSide,
                         depthWrite: false
                     });
-                    const label = new THREE.Mesh(labelGeometry, labelMaterial);
+                    const label = new window.THREE.Mesh(labelGeometry, labelMaterial);
                     label.position.set(0, 3, 0);
                     label.rotation.x = -Math.PI / 4;
                     container.add(label);
 
                     // Add corner pillars for visual reference
-                    const pillarGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 8);
-                    const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0x2196f3 });
+                    const pillarGeometry = new window.THREE.CylinderGeometry(0.1, 0.1, 0.5, 8);
+                    const pillarMaterial = new window.THREE.MeshStandardMaterial({ color: 0x2196f3 });
                     const corners = [
                         [-floorSize / 2, floorSize / 2],
                         [floorSize / 2, floorSize / 2],
@@ -228,7 +245,7 @@
                     ];
 
                     corners.forEach(([x, z]) => {
-                        const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+                        const pillar = new window.THREE.Mesh(pillarGeometry, pillarMaterial);
                         pillar.position.set(x, 0.25, z);
                         container.add(pillar);
                     });
@@ -257,7 +274,7 @@
                 }
 
                 function createShelf(shelf, index) {
-                    const shelfGroup = new THREE.Group();
+                    const shelfGroup = new window.THREE.Group();
                     const currentLevel = parseInt(shelf.level) || 1;
                     const shelfItems = shelf.items.filter(item => item.location_code === shelf.location_code);
 
@@ -272,14 +289,14 @@
                     };
 
                     // Modern materials with metallic finish
-                    const frameMaterial = new THREE.MeshStandardMaterial({
+                    const frameMaterial = new window.THREE.MeshStandardMaterial({
                         color: 0x303030,
                         metalness: 0.8,
                         roughness: 0.2,
                         envMapIntensity: 1
                     });
 
-                    const shelfMaterial = new THREE.MeshStandardMaterial({
+                    const shelfMaterial = new window.THREE.MeshStandardMaterial({
                         color: 0x404040,
                         metalness: 0.6,
                         roughness: 0.3,
@@ -287,7 +304,7 @@
                     });
 
                     // Create vertical frames
-                    const frameGeometry = new THREE.BoxGeometry(dims.frames, dims.height, dims.frames);
+                    const frameGeometry = new window.THREE.BoxGeometry(dims.frames, dims.height, dims.frames);
                     const corners = [
                         [-dims.width / 2, dims.height / 2, -dims.depth / 2],
                         [dims.width / 2, dims.height / 2, -dims.depth / 2],
@@ -296,7 +313,7 @@
                     ];
 
                     corners.forEach(([x, y, z]) => {
-                        const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+                        const frame = new window.THREE.Mesh(frameGeometry, frameMaterial);
                         frame.position.set(x, y, z);
                         shelfGroup.add(frame);
                     });
@@ -307,12 +324,12 @@
                         const yPos = i * dims.spacing;
 
                         // Create level group
-                        const levelGroup = new THREE.Group();
+                        const levelGroup = new window.THREE.Group();
 
                         // Main shelf surface with glass-like material
-                        const shelfSurface = new THREE.Mesh(
-                            new THREE.BoxGeometry(dims.width, dims.thickness, dims.depth),
-                            new THREE.MeshPhysicalMaterial({
+                        const shelfSurface = new window.THREE.Mesh(
+                            new window.THREE.BoxGeometry(dims.width, dims.thickness, dims.depth),
+                            new window.THREE.MeshPhysicalMaterial({
                                 color: 0x888888,
                                 metalness: 0.5,
                                 roughness: 0.2,
@@ -322,9 +339,9 @@
                         );
 
                         // Add reinforcement bars
-                        const barGeometry = new THREE.BoxGeometry(dims.width, dims.frames, dims.frames);
-                        const frontBar = new THREE.Mesh(barGeometry, frameMaterial);
-                        const backBar = new THREE.Mesh(barGeometry, frameMaterial);
+                        const barGeometry = new window.THREE.BoxGeometry(dims.width, dims.frames, dims.frames);
+                        const frontBar = new window.THREE.Mesh(barGeometry, frameMaterial);
+                        const backBar = new window.THREE.Mesh(barGeometry, frameMaterial);
 
                         frontBar.position.set(0, -dims.frames / 2, dims.depth / 2 - dims.frames / 2);
                         backBar.position.set(0, -dims.frames / 2, -dims.depth / 2 + dims.frames / 2);
@@ -393,24 +410,24 @@
                     ctx.textBaseline = 'middle';
                     ctx.fillText(`${shelfName}-${levelNum}`, 64, 16);
 
-                    const texture = new THREE.CanvasTexture(canvas);
-                    const geometry = new THREE.PlaneGeometry(0.4, 0.1);
-                    const material = new THREE.MeshBasicMaterial({
+                    const texture = new window.THREE.CanvasTexture(canvas);
+                    const geometry = new window.THREE.PlaneGeometry(0.4, 0.1);
+                    const material = new window.THREE.MeshBasicMaterial({
                         map: texture,
                         transparent: true,
-                        side: THREE.DoubleSide
+                        side: window.THREE.DoubleSide
                     });
 
-                    return new THREE.Mesh(geometry, material);
+                    return new window.THREE.Mesh(geometry, material);
                 }
 
                 function createInventoryItem(item) {
                     // Create a more detailed box for items
-                    const itemGroup = new THREE.Group();
+                    const itemGroup = new window.THREE.Group();
 
                     // Main box with beveled edges
-                    const boxGeometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
-                    const boxMaterial = new THREE.MeshPhysicalMaterial({
+                    const boxGeometry = new window.THREE.BoxGeometry(0.25, 0.25, 0.25);
+                    const boxMaterial = new window.THREE.MeshPhysicalMaterial({
                         color: 0x4CAF50,
                         metalness: 0.4,
                         roughness: 0.6,
@@ -418,18 +435,18 @@
                         clearcoatRoughness: 0.2
                     });
 
-                    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+                    const box = new window.THREE.Mesh(boxGeometry, boxMaterial);
                     itemGroup.add(box);
 
                     // Add edge highlights
-                    const edgeGeometry = new THREE.EdgesGeometry(boxGeometry);
-                    const edgeMaterial = new THREE.LineBasicMaterial({
+                    const edgeGeometry = new window.THREE.EdgesGeometry(boxGeometry);
+                    const edgeMaterial = new window.THREE.LineBasicMaterial({
                         color: 0x69F0AE,
                         transparent: true,
                         opacity: 0.5
                     });
 
-                    const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+                    const edges = new window.THREE.LineSegments(edgeGeometry, edgeMaterial);
                     itemGroup.add(edges);
 
                     // Update userData
@@ -448,8 +465,8 @@
                 }
 
                 // Add raycaster for interactivity
-                const raycaster = new THREE.Raycaster();
-                const mouse = new THREE.Vector2();
+                const raycaster = new window.THREE.Raycaster();
+                const mouse = new window.THREE.Vector2();
 
                 function onMouseMove(event) {
                     const rect = renderer.domElement.getBoundingClientRect();
@@ -487,7 +504,7 @@
                     event.preventDefault();
 
                     const rect = renderer.domElement.getBoundingClientRect();
-                    const mouse = new THREE.Vector2(
+                    const mouse = new window.THREE.Vector2(
                         ((event.clientX - rect.left) / rect.width) * 2 - 1,
                         -((event.clientY - rect.top) / rect.height) * 2 + 1
                     );
@@ -524,87 +541,61 @@
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                                                    <div class="space-y-4">
-                                                        <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                                            <span>Code: ${shelf.code}</span>
-                                                            <span>Location Code: ${shelf.location_code}</span>
-                                                            <span>Capacity: ${shelf.capacity} units</span>
-                                                        </div>
+                                                        <div class="space-y-4">
+                                                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                                <span>Code: ${shelf.code}</span>
+                                                                <span>Location Code: ${shelf.location_code}</span>
+                                                                <span>Capacity: ${shelf.capacity} units</span>
+                                                            </div>
 
-                                                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                                    <tr>
-                                                                        <th scope="col" class="px-4 py-3">Item Number</th>
-                                                                        <th scope="col" class="px-4 py-3">Item Name</th>
-                                                                        <th scope="col" class="px-4 py-3">Batch No.</th>
-                                                                        <th scope="col" class="px-4 py-3">BOM Unit</th>
-                                                                        <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
-                                                                        <th scope="col" class="px-4 py-3 text-right">Reserved</th>
-                                                                        <th scope="col" class="px-4 py-3 text-right">Actual</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>`;
+                                                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                        <tr>
+                                                                            <th scope="col" class="px-4 py-3">Item Number</th>
+                                                                            <th scope="col" class="px-4 py-3">Item Name</th>
+                                                                            <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                                            <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                                            <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                                            <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                                            <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                                <td class="px-4 py-3">${item.item_number || '-'}</td>
-                                                                <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                                                <td class="px-4 py-3">${item.batch_number || '-'}</td>
-                                                                <td class="px-4 py-3">${item.bom_unit || '-'}</td>
-                                                                <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
-                                                                <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
-                                                                <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
-                                                            </tr>`;
+                                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                    <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                                                    <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                                                    <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                                                    <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                                                    <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                                                    <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                                                    <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                                                </tr>`;
                         });
                     } else {
                         html += `
-                                                        <tr class="bg-white dark:bg-gray-800">
-                                                            <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                                                No items in this location
-                                                            </td>
-                                                        </tr>`;
+                                                            <tr class="bg-white dark:bg-gray-800">
+                                                                <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                                                    No items in this location
+                                                                </td>
+                                                            </tr>`;
                     }
 
                     html += `
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>`;
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');
-
-                    // Add event listeners
                     document.addEventListener('keydown', window.handleEscapeKey);
                     modal.addEventListener('click', window.handleOutsideClick);
-                }
-
-                function closeShelfModal() {
-                    const modal = document.getElementById('shelf-modal');
-                    if (modal) {
-                        modal.classList.add('hidden');
-                        // Remove any existing event listeners
-                        window.removeEventListener('click', handleOutsideClick);
-                        window.removeEventListener('keydown', handleEscapeKey);
-                    }
-                }
-
-                function handleOutsideClick(event) {
-                    const modal = document.getElementById('shelf-modal');
-                    const modalContent = modal.querySelector('.rounded-lg');
-                    if (event.target === modal || !modalContent.contains(event.target)) {
-                        closeShelfModal();
-                    }
-                }
-
-                function handleEscapeKey(event) {
-                    if (event.key === 'Escape') {
-                        closeShelfModal();
-                    }
                 }
 
                 // Add click event listener to the renderer
@@ -613,7 +604,7 @@
                 // Make cursor pointer when hovering over shelves
                 renderer.domElement.addEventListener('mousemove', function (event) {
                     const rect = renderer.domElement.getBoundingClientRect();
-                    const mouse = new THREE.Vector2(
+                    const mouse = new window.THREE.Vector2(
                         ((event.clientX - rect.left) / rect.width) * 2 - 1,
                         -((event.clientY - rect.top) / rect.height) * 2 + 1
                     );
@@ -637,7 +628,7 @@
                 window.addEventListener('click', function (event) {
                     const modal = document.getElementById('shelf-modal');
                     if (event.target === modal) {
-                        closeShelfModal();
+                        window.closeShelfModal();
                     }
                 });
 
