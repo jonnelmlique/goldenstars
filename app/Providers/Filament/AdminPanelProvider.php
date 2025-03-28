@@ -89,7 +89,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::scripts.after',
-                fn() => new HtmlString('@vite(["resources/js/app.js"])')
+                fn() => new HtmlString('<script type="module" src="' . asset('build/app.js') . '"></script>')
             );
     }
 }
