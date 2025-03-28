@@ -41,13 +41,6 @@
                                 </svg>
                             </button>
                         </div>
-
-                        {{-- Loading State --}}
-                        <div id="modal-loading" class="hidden flex justify-center items-center py-12">
-                            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-                            <span class="ml-3 text-gray-600 dark:text-gray-400">Loading...</span>
-                        </div>
-
                         <div id="modal-content" class="mt-4"></div>
                     </div>
                 </div>
@@ -161,7 +154,7 @@
                     container.position.set(location.x_position, 0, location.z_position);
 
                     // Create enhanced floor with grid pattern
-                    const floorSize = 4;
+                    const floorSize = 7;
                     const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
                     const floorMaterial = new THREE.MeshStandardMaterial({
                         color: 0xe0e0e0,
@@ -265,142 +258,198 @@
 
                 function createShelf(shelf, index) {
                     const shelfGroup = new THREE.Group();
+                    const currentLevel = parseInt(shelf.level) || 1;
+                    const shelfItems = shelf.items.filter(item => item.location_code === shelf.location_code);
 
-                    // Adjusted dimensions for better stability
-                    const baseGeometry = new THREE.BoxGeometry(1.5, 0.05, 0.8);
-                    const baseMaterial = new THREE.MeshStandardMaterial({
-                        color: 0x606060,
-                        metalness: 0.3,
-                        roughness: 0.7
+                    // Modern shelf dimensions
+                    const dims = {
+                        width: 2.2,      // Wider for better item display
+                        height: 2.6,     // Taller overall height
+                        depth: 0.8,      // Good depth for items
+                        thickness: 0.03,  // Thinner, more modern look
+                        spacing: 0.6,     // Level spacing
+                        frames: 0.04     // Frame thickness
+                    };
+
+                    // Modern materials with metallic finish
+                    const frameMaterial = new THREE.MeshStandardMaterial({
+                        color: 0x303030,
+                        metalness: 0.8,
+                        roughness: 0.2,
+                        envMapIntensity: 1
                     });
 
-                    // Thinner supports with proper height
-                    const supportGeometry = new THREE.BoxGeometry(0.05, 2, 0.05);
-                    const supportMaterial = new THREE.MeshStandardMaterial({
+                    const shelfMaterial = new THREE.MeshStandardMaterial({
                         color: 0x404040,
-                        metalness: 0.5,
-                        roughness: 0.5
+                        metalness: 0.6,
+                        roughness: 0.3,
+                        envMapIntensity: 0.5
                     });
 
-                    // Create shelf levels with precise spacing
-                    const levels = 4;
-                    const levelSpacing = 0.5; // Consistent spacing
-                    const totalHeight = levelSpacing * (levels - 1);
-
-                    // Add supports at each corner
-                    const supportPositions = [
-                        { x: -0.7, z: -0.35 }, // Front left
-                        { x: 0.7, z: -0.35 },  // Front right
-                        { x: -0.7, z: 0.35 },  // Back left
-                        { x: 0.7, z: 0.35 }    // Back right
+                    // Create vertical frames
+                    const frameGeometry = new THREE.BoxGeometry(dims.frames, dims.height, dims.frames);
+                    const corners = [
+                        [-dims.width / 2, dims.height / 2, -dims.depth / 2],
+                        [dims.width / 2, dims.height / 2, -dims.depth / 2],
+                        [-dims.width / 2, dims.height / 2, dims.depth / 2],
+                        [dims.width / 2, dims.height / 2, dims.depth / 2]
                     ];
 
-                    supportPositions.forEach(pos => {
-                        const support = new THREE.Mesh(supportGeometry, supportMaterial);
-                        support.position.set(pos.x, 1, pos.z);
-                        shelfGroup.add(support);
+                    corners.forEach(([x, y, z]) => {
+                        const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+                        frame.position.set(x, y, z);
+                        shelfGroup.add(frame);
                     });
 
-                    // Add shelf levels with precise positioning
+                    // Create shelf levels
+                    const levels = 4;
                     for (let i = 0; i < levels; i++) {
-                        const levelMesh = new THREE.Mesh(baseGeometry, baseMaterial);
-                        const yPosition = i * levelSpacing;
-                        levelMesh.position.set(0, yPosition, 0);
-                        shelfGroup.add(levelMesh);
+                        const yPos = i * dims.spacing;
 
-                        // Add shelf label with adjusted position
-                        const labelCanvas = document.createElement('canvas');
-                        const ctx = labelCanvas.getContext('2d');
-                        labelCanvas.width = 128;
-                        labelCanvas.height = 32;
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, 128, 32);
-                        ctx.font = 'bold 20px Arial';
-                        ctx.fillStyle = '#000000';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(`${shelf.name}-${i + 1}`, 64, 16);
+                        // Create level group
+                        const levelGroup = new THREE.Group();
 
-                        const labelTexture = new THREE.CanvasTexture(labelCanvas);
-                        const labelGeometry = new THREE.PlaneGeometry(0.4, 0.1);
-                        const labelMaterial = new THREE.MeshBasicMaterial({
-                            map: labelTexture,
-                            transparent: true,
-                            side: THREE.DoubleSide
-                        });
-                        const label = new THREE.Mesh(labelGeometry, labelMaterial);
-                        label.position.set(0.8, yPosition + 0.1, 0.41);
+                        // Main shelf surface with glass-like material
+                        const shelfSurface = new THREE.Mesh(
+                            new THREE.BoxGeometry(dims.width, dims.thickness, dims.depth),
+                            new THREE.MeshPhysicalMaterial({
+                                color: 0x888888,
+                                metalness: 0.5,
+                                roughness: 0.2,
+                                transmission: 0.1,
+                                thickness: 0.5
+                            })
+                        );
+
+                        // Add reinforcement bars
+                        const barGeometry = new THREE.BoxGeometry(dims.width, dims.frames, dims.frames);
+                        const frontBar = new THREE.Mesh(barGeometry, frameMaterial);
+                        const backBar = new THREE.Mesh(barGeometry, frameMaterial);
+
+                        frontBar.position.set(0, -dims.frames / 2, dims.depth / 2 - dims.frames / 2);
+                        backBar.position.set(0, -dims.frames / 2, -dims.depth / 2 + dims.frames / 2);
+
+                        levelGroup.add(shelfSurface, frontBar, backBar);
+                        levelGroup.position.y = yPos;
+                        shelfGroup.add(levelGroup);
+
+                        // Add items on current level
+                        if (i + 1 === currentLevel) {
+                            shelfItems.forEach((item, itemIndex) => {
+                                const itemMesh = createInventoryItem(item);
+                                const xOffset = -dims.width / 2 + 0.3 + (itemIndex * 0.4);
+                                itemMesh.position.set(
+                                    xOffset,
+                                    yPos + 0.15,
+                                    0
+                                );
+                                shelfGroup.add(itemMesh);
+                            });
+                        }
+
+                        // Level indicator with modern design
+                        const label = createLevelLabel(shelf.name, i + 1, currentLevel === i + 1);
+                        label.position.set(
+                            dims.width / 2 + 0.15,
+                            yPos + 0.1,
+                            dims.depth / 2
+                        );
                         shelfGroup.add(label);
-
-                        // Add items with proper filtering by location_code
-                        const levelItems = shelf.items.filter(item => item.location_code === shelf.location_code);
-                        levelItems.forEach((item, itemIndex) => {
-                            const itemMesh = createInventoryItem(item);
-                            itemMesh.position.set(
-                                -0.5 + (itemIndex * 0.25),
-                                yPosition + 0.075,
-                                0
-                            );
-                            shelfGroup.add(itemMesh);
-                        });
                     }
 
-                    // Rest of the existing shelf creation code
+                    // Position shelf unit with more spacing
                     shelfGroup.position.set(
-                        (index % 2) * 2 - 1,
+                        (index % 2) * 3.5 - 1.75,
                         0,
-                        Math.floor(index / 2) * 2 - 1
+                        Math.floor(index / 2) * 3.5 - 1.75
                     );
 
-                    // Update userData to include full shelf data with location
+                    // Add shelf data
                     shelfGroup.userData = {
                         type: 'shelf',
                         shelfData: {
                             ...shelf,
-                            items: shelf.items.filter(item => item.location_code === shelf.location_code)
+                            currentLevel,
+                            items: shelfItems
                         }
                     };
 
                     return shelfGroup;
                 }
 
-                function createInventoryItem(item) {
-                    const itemGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-                    const itemMaterial = new THREE.MeshStandardMaterial({
-                        color: 0x4CAF50,
-                        metalness: 0.5,
-                        roughness: 0.7
-                    });
-                    const itemMesh = new THREE.Mesh(itemGeometry, itemMaterial);
+                function createLevelLabel(shelfName, levelNum, isCurrentLevel) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 128;
+                    canvas.height = 32;
 
-                    // Update item userData
-                    itemMesh.userData = {
+                    // Highlight current level
+                    ctx.fillStyle = isCurrentLevel ? '#e3f2fd' : '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.font = 'bold 20px Arial';
+                    ctx.fillStyle = isCurrentLevel ? '#1976d2' : '#000000';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`${shelfName}-${levelNum}`, 64, 16);
+
+                    const texture = new THREE.CanvasTexture(canvas);
+                    const geometry = new THREE.PlaneGeometry(0.4, 0.1);
+                    const material = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        transparent: true,
+                        side: THREE.DoubleSide
+                    });
+
+                    return new THREE.Mesh(geometry, material);
+                }
+
+                function createInventoryItem(item) {
+                    // Create a more detailed box for items
+                    const itemGroup = new THREE.Group();
+
+                    // Main box with beveled edges
+                    const boxGeometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+                    const boxMaterial = new THREE.MeshPhysicalMaterial({
+                        color: 0x4CAF50,
+                        metalness: 0.4,
+                        roughness: 0.6,
+                        clearcoat: 0.5,
+                        clearcoatRoughness: 0.2
+                    });
+
+                    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+                    itemGroup.add(box);
+
+                    // Add edge highlights
+                    const edgeGeometry = new THREE.EdgesGeometry(boxGeometry);
+                    const edgeMaterial = new THREE.LineBasicMaterial({
+                        color: 0x69F0AE,
+                        transparent: true,
+                        opacity: 0.5
+                    });
+
+                    const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+                    itemGroup.add(edges);
+
+                    // Update userData
+                    itemGroup.userData = {
                         type: 'item',
-                        name: item.name,
-                        sku: item.sku,
-                        quantity: item.quantity,
-                        unit: item.unit,
-                        location_code: item.location_code
+                        name: item.item_name,
+                        item_number: item.item_number,
+                        batch_number: item.batch_number,
+                        quantity: item.physical_inventory,
+                        unit: item.bom_unit,
+                        location_code: item.location_code,
+                        level: parseInt(item.location_code.slice(-2, -1)) || 1
                     };
 
-                    return itemMesh;
+                    return itemGroup;
                 }
 
                 // Add raycaster for interactivity
                 const raycaster = new THREE.Raycaster();
                 const mouse = new THREE.Vector2();
-
-                let isMouseMoving = false;
-                let mouseTimeout = null;
-                let lastClickTime = 0;
-
-                renderer.domElement.addEventListener('mousemove', function () {
-                    isMouseMoving = true;
-                    if (mouseTimeout) clearTimeout(mouseTimeout);
-                    mouseTimeout = setTimeout(() => {
-                        isMouseMoving = false;
-                    }, 150); // Wait 150ms after mouse stops moving
-                });
 
                 function onMouseMove(event) {
                     const rect = renderer.domElement.getBoundingClientRect();
@@ -434,16 +483,6 @@
                 document.getElementById('warehouse-container').appendChild(infoPanel);
 
                 // Click handler
-                renderer.domElement.addEventListener('click', function (event) {
-                    const now = Date.now();
-                    if (isMouseMoving || now - lastClickTime < 500) {
-                        // Prevent click if mouse is moving or clicked too recently
-                        return;
-                    }
-                    lastClickTime = now;
-                    onClick(event);
-                });
-
                 function onClick(event) {
                     event.preventDefault();
 
@@ -476,78 +515,68 @@
                     const modal = document.getElementById('shelf-modal');
                     const title = document.getElementById('modal-title');
                     const content = document.getElementById('modal-content');
-                    const loading = document.getElementById('modal-loading');
 
-                    if (!shelf || !modal || !title || !content || !loading) {
-                        console.error('Missing required elements for modal');
+                    if (!shelf || !modal || !title || !content) {
+                        console.error('Missing required elements for modal', { shelf, modal, title, content });
                         return;
                     }
 
-                    // Show modal with loading state
-                    modal.classList.remove('hidden');
-                    content.classList.add('hidden');
-                    loading.classList.remove('hidden');
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
-                    // Add delay before showing content
-                    setTimeout(() => {
-                        loading.classList.add('hidden');
-                        content.classList.remove('hidden');
+                    let html = `
+                                                    <div class="space-y-4">
+                                                        <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                            <span>Code: ${shelf.code}</span>
+                                                            <span>Location Code: ${shelf.location_code}</span>
+                                                            <span>Capacity: ${shelf.capacity} units</span>
+                                                        </div>
 
-                        let html = `
-                                            <div class="space-y-4">
-                                                <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                                    <span>Code: ${shelf.code}</span>
-                                                    <span>Location Code: ${shelf.location_code}</span>
-                                                    <span>Capacity: ${shelf.capacity} units</span>
-                                                </div>
+                                                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                    <tr>
+                                                                        <th scope="col" class="px-4 py-3">Item Number</th>
+                                                                        <th scope="col" class="px-4 py-3">Item Name</th>
+                                                                        <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                                        <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                                        <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                                        <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                                        <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>`;
 
-                                                <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                            <tr>
-                                                                <th scope="col" class="px-4 py-3">Item Number</th>
-                                                                <th scope="col" class="px-4 py-3">Item Name</th>
-                                                                <th scope="col" class="px-4 py-3">Batch No.</th>
-                                                                <th scope="col" class="px-4 py-3">BOM Unit</th>
-                                                                <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
-                                                                <th scope="col" class="px-4 py-3 text-right">Reserved</th>
-                                                                <th scope="col" class="px-4 py-3 text-right">Actual</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>`;
-
-                        const items = shelf.items || [];
-                        if (items.length > 0) {
-                            items.forEach(item => {
-                                html += `
-                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                        <td class="px-4 py-3">${item.item_number || '-'}</td>
-                                                        <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                                        <td class="px-4 py-3">${item.batch_number || '-'}</td>
-                                                        <td class="px-4 py-3">${item.bom_unit || '-'}</td>
-                                                        <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
-                                                        <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
-                                                        <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
-                                                    </tr>`;
-                            });
-                        } else {
+                    const items = shelf.items || [];
+                    if (items.length > 0) {
+                        items.forEach(item => {
                             html += `
-                                                <tr class="bg-white dark:bg-gray-800">
-                                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                                        No items in this location
-                                                    </td>
-                                                </tr>`;
-                        }
-
+                                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                                                <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                                                <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                                                <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                                                <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                                                <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                                                <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                                            </tr>`;
+                        });
+                    } else {
                         html += `
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>`;
+                                                        <tr class="bg-white dark:bg-gray-800">
+                                                            <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                                                No items in this location
+                                                            </td>
+                                                        </tr>`;
+                    }
 
-                        content.innerHTML = html;
-                    }, 600); // 600ms delay
+                    html += `
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>`;
+
+                    content.innerHTML = html;
+                    modal.classList.remove('hidden');
 
                     // Add event listeners
                     document.addEventListener('keydown', window.handleEscapeKey);
