@@ -19,7 +19,7 @@ class WarehouseShelfSeeder extends Seeder
             for ($i = 1; $i <= 4; $i++) {
                 // Generate location code like "LOCATION A0171"
                 $locationCode = sprintf(
-                    "LOCATION %s%02d%d%d",
+                    "%s%02d%d%d",
                     strtoupper(substr($location->name, 0, 1)), // First letter of location name
                     $location->id, // Location ID
                     $i, // Shelf level

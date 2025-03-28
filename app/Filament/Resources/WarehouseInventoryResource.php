@@ -26,8 +26,6 @@ class WarehouseInventoryResource extends Resource
                 ->unique(ignoreRecord: true),
             Forms\Components\TextInput::make('item_name')
                 ->required(),
-            Forms\Components\TextInput::make('grade')
-                ->required(),
             Forms\Components\TextInput::make('batch_number')
                 ->required(),
             Forms\Components\Select::make('location_code')
@@ -38,6 +36,8 @@ class WarehouseInventoryResource extends Resource
                 })
                 ->required()
                 ->searchable(),
+            Forms\Components\TextInput::make('grade')
+                ->required(),
             Forms\Components\TextInput::make('bom_unit')
                 ->label('BOM Unit')
                 ->required(),
@@ -63,10 +63,10 @@ class WarehouseInventoryResource extends Resource
                 Tables\Columns\TextColumn::make('item_name')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('grade')
+                Tables\Columns\TextColumn::make('batch_number')
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('batch_number')
+                Tables\Columns\TextColumn::make('grade')
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('location_code')

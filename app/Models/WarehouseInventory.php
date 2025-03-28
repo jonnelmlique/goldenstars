@@ -12,7 +12,6 @@ class WarehouseInventory extends Model
     protected $fillable = [
         'item_number',
         'item_name',
-        'grade',
         'batch_number',
         'location_code',
         'bom_unit',

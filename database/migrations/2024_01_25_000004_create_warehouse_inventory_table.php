@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->id();
             $table->string('item_number');
             $table->string('item_name');
-            $table->string('grade');
             $table->string('batch_number');
             $table->string('location_code');
             $table->string('bom_unit');
