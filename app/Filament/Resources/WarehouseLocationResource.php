@@ -45,11 +45,16 @@ class WarehouseLocationResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('code')->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('code')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('shelves_count')
                     ->counts('shelves')
-                    ->label('Shelves'),
+                    ->label('Shelves')
+                    ->toggleable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

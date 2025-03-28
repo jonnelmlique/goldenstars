@@ -42,16 +42,21 @@ class BuildingResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('code')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('description')
-                    ->limit(50),
+                    ->limit(50)
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('location')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M d, Y h:i A')
-                    ->timezone('Asia/Manila'),
+                    ->timezone('Asia/Manila')
+                    ->toggleable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

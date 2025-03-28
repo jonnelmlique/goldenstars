@@ -51,19 +51,26 @@ class WarehouseShelfResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('location.name')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('code')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('location_code')
                     ->label('Location Code')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('level'),
-                Tables\Columns\TextColumn::make('capacity'),
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('level')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('capacity')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('items_count')
                     ->counts('items')
-                    ->label('Items'),
+                    ->label('Items')
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('location')
