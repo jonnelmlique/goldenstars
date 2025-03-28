@@ -41,6 +41,13 @@
                                 </svg>
                             </button>
                         </div>
+
+                        {{-- Loading State --}}
+                        <div id="modal-loading" class="hidden flex justify-center items-center py-12">
+                            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                            <span class="ml-3 text-gray-600 dark:text-gray-400">Loading...</span>
+                        </div>
+
                         <div id="modal-content" class="mt-4"></div>
                     </div>
                 </div>
@@ -383,6 +390,18 @@
                 const raycaster = new THREE.Raycaster();
                 const mouse = new THREE.Vector2();
 
+                let isMouseMoving = false;
+                let mouseTimeout = null;
+                let lastClickTime = 0;
+
+                renderer.domElement.addEventListener('mousemove', function () {
+                    isMouseMoving = true;
+                    if (mouseTimeout) clearTimeout(mouseTimeout);
+                    mouseTimeout = setTimeout(() => {
+                        isMouseMoving = false;
+                    }, 150); // Wait 150ms after mouse stops moving
+                });
+
                 function onMouseMove(event) {
                     const rect = renderer.domElement.getBoundingClientRect();
                     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -415,6 +434,16 @@
                 document.getElementById('warehouse-container').appendChild(infoPanel);
 
                 // Click handler
+                renderer.domElement.addEventListener('click', function (event) {
+                    const now = Date.now();
+                    if (isMouseMoving || now - lastClickTime < 500) {
+                        // Prevent click if mouse is moving or clicked too recently
+                        return;
+                    }
+                    lastClickTime = now;
+                    onClick(event);
+                });
+
                 function onClick(event) {
                     event.preventDefault();
 
@@ -447,15 +476,25 @@
                     const modal = document.getElementById('shelf-modal');
                     const title = document.getElementById('modal-title');
                     const content = document.getElementById('modal-content');
+                    const loading = document.getElementById('modal-loading');
 
-                    if (!shelf || !modal || !title || !content) {
-                        console.error('Missing required elements for modal', { shelf, modal, title, content });
+                    if (!shelf || !modal || !title || !content || !loading) {
+                        console.error('Missing required elements for modal');
                         return;
                     }
 
+                    // Show modal with loading state
+                    modal.classList.remove('hidden');
+                    content.classList.add('hidden');
+                    loading.classList.remove('hidden');
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
-                    let html = `
+                    // Add delay before showing content
+                    setTimeout(() => {
+                        loading.classList.add('hidden');
+                        content.classList.remove('hidden');
+
+                        let html = `
                                             <div class="space-y-4">
                                                 <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                                                     <span>Code: ${shelf.code}</span>
@@ -478,10 +517,10 @@
                                                         </thead>
                                                         <tbody>`;
 
-                    const items = shelf.items || [];
-                    if (items.length > 0) {
-                        items.forEach(item => {
-                            html += `
+                        const items = shelf.items || [];
+                        if (items.length > 0) {
+                            items.forEach(item => {
+                                html += `
                                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                         <td class="px-4 py-3">${item.item_number || '-'}</td>
                                                         <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
@@ -491,24 +530,24 @@
                                                         <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
                                                         <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
                                                     </tr>`;
-                        });
-                    } else {
-                        html += `
+                            });
+                        } else {
+                            html += `
                                                 <tr class="bg-white dark:bg-gray-800">
                                                     <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
                                                         No items in this location
                                                     </td>
                                                 </tr>`;
-                    }
+                        }
 
-                    html += `
+                        html += `
                                                         </tbody>
                                                     </table>
                                                 </div>
                                             </div>`;
 
-                    content.innerHTML = html;
-                    modal.classList.remove('hidden');
+                        content.innerHTML = html;
+                    }, 600); // 600ms delay
 
                     // Add event listeners
                     document.addEventListener('keydown', window.handleEscapeKey);
