@@ -18,7 +18,6 @@ class WarehouseInventorySeeder extends Seeder
             [
                 'item_number' => '040007895',
                 'item_name' => 'LAPTOP DELL LATITUDE 5420',
-                'grade' => 'New',
                 'batch_number' => '2041069',
                 'bom_unit' => 'UNIT',
                 'physical_inventory' => 5,
@@ -28,7 +27,6 @@ class WarehouseInventorySeeder extends Seeder
             [
                 'item_number' => '040007896',
                 'item_name' => 'PRINTER EPSON L5290',
-                'grade' => 'Good',
                 'batch_number' => '2041070',
                 'bom_unit' => 'UNIT',
                 'physical_inventory' => 3,
@@ -38,7 +36,6 @@ class WarehouseInventorySeeder extends Seeder
             [
                 'item_number' => '040007897',
                 'item_name' => 'KEYBOARD MECHANICAL RGB',
-                'grade' => 'New',
                 'batch_number' => '2041071',
                 'bom_unit' => 'PCS',
                 'physical_inventory' => 10,
@@ -48,7 +45,6 @@ class WarehouseInventorySeeder extends Seeder
             [
                 'item_number' => '040007898',
                 'item_name' => 'MONITOR DELL 24" IPS',
-                'grade' => 'Good',
                 'batch_number' => '2041072',
                 'bom_unit' => 'UNIT',
                 'physical_inventory' => 8,
@@ -58,7 +54,6 @@ class WarehouseInventorySeeder extends Seeder
             [
                 'item_number' => '040007899',
                 'item_name' => 'MOUSE LOGITECH G502',
-                'grade' => 'New',
                 'batch_number' => '2041073',
                 'bom_unit' => 'PCS',
                 'physical_inventory' => 15,
