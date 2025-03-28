@@ -64,9 +64,6 @@ class WarehouseInventoryResource extends Resource
                 Tables\Columns\TextColumn::make('batch_number')
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('grade')
-                    ->searchable()
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('location_code')
                     ->label('Location')
                     ->searchable()
