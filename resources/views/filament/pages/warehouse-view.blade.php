@@ -469,7 +469,6 @@
                                             <tr>
                                                 <th scope="col" class="px-4 py-3">Item Number</th>
                                                 <th scope="col" class="px-4 py-3">Item Name</th>
-                                                <th scope="col" class="px-4 py-3">Grade</th>
                                                 <th scope="col" class="px-4 py-3">Batch No.</th>
                                                 <th scope="col" class="px-4 py-3">BOM Unit</th>
                                                 <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
@@ -486,7 +485,6 @@
                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                         <td class="px-4 py-3">${item.item_number || '-'}</td>
                                         <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                        <td class="px-4 py-3">${item.grade || '-'}</td>
                                         <td class="px-4 py-3">${item.batch_number || '-'}</td>
                                         <td class="px-4 py-3">${item.bom_unit || '-'}</td>
                                         <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
