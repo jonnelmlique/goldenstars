@@ -25,23 +25,23 @@
                 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                     <div
                         class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
-                        <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                        {{-- Header with close button --}}
+                        <div
+                            class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
+                            <div class="w-8">{{-- Spacer --}}</div>
+                            <h3 id="modal-title"
+                                class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100 flex-1 text-center">
+                            </h3>
                             <button type="button" onclick="closeShelfModal()"
-                                class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none mb-4">
+                                class="rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 p-2 text-gray-400 hover:text-gray-500 focus:outline-none">
                                 <span class="sr-only">Close</span>
-                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
-                        <div class="sm:flex sm:items-start">
-                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                <h3 id="modal-title"
-                                    class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100"></h3>
-                                <div id="modal-content" class="mt-4"></div>
-                            </div>
-                        </div>
+                        <div id="modal-content" class="mt-4"></div>
                     </div>
                 </div>
             </div>
@@ -456,56 +456,56 @@
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                    <span>Code: ${shelf.code}</span>
-                                    <span>Location Code: ${shelf.location_code}</span>
-                                    <span>Capacity: ${shelf.capacity} units</span>
-                                </div>
+                                            <div class="space-y-4">
+                                                <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                    <span>Code: ${shelf.code}</span>
+                                                    <span>Location Code: ${shelf.location_code}</span>
+                                                    <span>Capacity: ${shelf.capacity} units</span>
+                                                </div>
 
-                                <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                            <tr>
-                                                <th scope="col" class="px-4 py-3">Item Number</th>
-                                                <th scope="col" class="px-4 py-3">Item Name</th>
-                                                <th scope="col" class="px-4 py-3">Batch No.</th>
-                                                <th scope="col" class="px-4 py-3">BOM Unit</th>
-                                                <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
-                                                <th scope="col" class="px-4 py-3 text-right">Reserved</th>
-                                                <th scope="col" class="px-4 py-3 text-right">Actual</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>`;
+                                                <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                            <tr>
+                                                                <th scope="col" class="px-4 py-3">Item Number</th>
+                                                                <th scope="col" class="px-4 py-3">Item Name</th>
+                                                                <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                                <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                                <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                                <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                                <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                        <td class="px-4 py-3">${item.item_number || '-'}</td>
-                                        <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                        <td class="px-4 py-3">${item.batch_number || '-'}</td>
-                                        <td class="px-4 py-3">${item.bom_unit || '-'}</td>
-                                        <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
-                                        <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
-                                        <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
-                                    </tr>`;
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                        <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                                        <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                                        <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                                        <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                                        <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                                        <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                                        <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                                    </tr>`;
                         });
                     } else {
                         html += `
-                                <tr class="bg-white dark:bg-gray-800">
-                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                        No items in this location
-                                    </td>
-                                </tr>`;
+                                                <tr class="bg-white dark:bg-gray-800">
+                                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                                        No items in this location
+                                                    </td>
+                                                </tr>`;
                     }
 
                     html += `
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>`;
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');
