@@ -8,64 +8,87 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Database\Eloquent\Model;
 
 class WarehouseInventoryResource extends Resource
 {
     protected static ?string $model = WarehouseInventory::class;
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';  // Changed to a different 3D box icon
     protected static ?string $navigationGroup = 'Warehouse';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('shelf_id')
-                ->relationship('shelf', 'name')
-                ->preload()
-                ->searchable()
-                ->required(),
-            Forms\Components\TextInput::make('name')
-                ->required(),
-            Forms\Components\TextInput::make('sku')
+            Forms\Components\TextInput::make('item_number')
                 ->required()
                 ->unique(ignoreRecord: true),
-            Forms\Components\Textarea::make('description'),
-            Forms\Components\Grid::make(2)->schema([
-                Forms\Components\TextInput::make('quantity')
-                    ->numeric()
-                    ->required(),
-                Forms\Components\TextInput::make('unit')
-                    ->required(),
-            ]),
-            Forms\Components\TextInput::make('shelf_position')
+            Forms\Components\TextInput::make('item_name')
+                ->required(),
+            Forms\Components\TextInput::make('grade')
+                ->required(),
+            Forms\Components\TextInput::make('batch_number')
+                ->required(),
+            Forms\Components\Select::make('location_code')
+                ->label('Location')
+                ->options(function () {
+                    return \App\Models\WarehouseShelf::pluck('location_code', 'location_code')
+                        ->toArray();
+                })
+                ->required()
+                ->searchable(),
+            Forms\Components\TextInput::make('bom_unit')
+                ->label('BOM Unit')
+                ->required(),
+            Forms\Components\TextInput::make('physical_inventory')
                 ->numeric()
-                ->default(1)
+                ->required(),
+            Forms\Components\TextInput::make('physical_reserved')
+                ->numeric()
+                ->required(),
+            Forms\Components\TextInput::make('actual_count')
+                ->numeric()
                 ->required(),
         ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            Tables\Columns\TextColumn::make('name')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('sku')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('shelf.location.name')
-                ->label('Location')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('shelf.name')
-                ->label('Shelf')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('quantity'),
-            Tables\Columns\TextColumn::make('unit'),
-        ])
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('item_number')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('item_name')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('grade')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('batch_number')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('location_code')
+                    ->label('Location')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('bom_unit')
+                    ->label('BOM Unit')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('physical_inventory')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('physical_reserved')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('actual_count')
+                    ->toggleable(),
+            ])
             ->filters([
-                Tables\Filters\SelectFilter::make('shelf')
-                    ->relationship('shelf', 'name'),
-                Tables\Filters\SelectFilter::make('location')
-                    ->relationship('shelf.location', 'name'),
+                Tables\Filters\SelectFilter::make('location_code')
+                    ->options(function () {
+                        return \App\Models\WarehouseShelf::pluck('location_code', 'location_code')
+                            ->toArray();
+                    })
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

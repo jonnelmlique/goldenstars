@@ -14,6 +14,7 @@ class WarehouseShelf extends Model
         'code',
         'level',
         'capacity',
+        'location_code', // Add this new field
     ];
 
     public function location(): BelongsTo
@@ -23,6 +24,6 @@ class WarehouseShelf extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(WarehouseInventory::class, 'shelf_id');
+        return $this->hasMany(WarehouseInventory::class, 'location_code', 'location_code');
     }
 }

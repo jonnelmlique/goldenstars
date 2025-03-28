@@ -325,13 +325,13 @@
                         label.position.set(0.8, yPosition + 0.1, 0.41);
                         shelfGroup.add(label);
 
-                        // Add items with proper alignment
-                        const levelItems = shelf.items.filter(item => item.shelf_position === i + 1);
+                        // Add items with proper filtering by location_code
+                        const levelItems = shelf.items.filter(item => item.location_code === shelf.location_code);
                         levelItems.forEach((item, itemIndex) => {
                             const itemMesh = createInventoryItem(item);
                             itemMesh.position.set(
                                 -0.5 + (itemIndex * 0.25),
-                                yPosition + 0.075, // Half height of items
+                                yPosition + 0.075,
                                 0
                             );
                             shelfGroup.add(itemMesh);
@@ -348,7 +348,10 @@
                     // Update userData to include full shelf data with location
                     shelfGroup.userData = {
                         type: 'shelf',
-                        shelfData: shelf // shelf now includes location data
+                        shelfData: {
+                            ...shelf,
+                            items: shelf.items.filter(item => item.location_code === shelf.location_code)
+                        }
                     };
 
                     return shelfGroup;
@@ -363,13 +366,14 @@
                     });
                     const itemMesh = new THREE.Mesh(itemGeometry, itemMaterial);
 
-                    // Add item hover data
+                    // Update item userData
                     itemMesh.userData = {
                         type: 'item',
                         name: item.name,
                         sku: item.sku,
                         quantity: item.quantity,
-                        unit: item.unit
+                        unit: item.unit,
+                        location_code: item.location_code
                     };
 
                     return itemMesh;
@@ -449,65 +453,61 @@
                         return;
                     }
 
-                    console.log('Showing modal for shelf:', shelf); // Debug log
-
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                                        <div class="space-y-4">
-                                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                                <span>Code: ${shelf.code}</span>
-                                                <span>Level: ${shelf.level}</span>
-                                                <span>Capacity: ${shelf.capacity} units</span>
-                                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                    <span>Code: ${shelf.code}</span>
+                                    <span>Location Code: ${shelf.location_code}</span>
+                                    <span>Capacity: ${shelf.capacity} units</span>
+                                </div>
 
-                                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                                    <thead class="text  -xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                        <tr>
-                                                            <th scope="col" class="px-6 py-3">Item Name</th>
-                                                            <th scope="col" class="px-6 py-3">SKU</th>
-                                                            <th scope="col" class="px-6 py-3">Description</th>
-                                                            <th scope="col" class="px-6 py-3">Position</th>
-                                                            <th scope="col" class="px-6 py-3 text-right">Quantity</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>`;
+                                <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr>
+                                                <th scope="col" class="px-4 py-3">Item Number</th>
+                                                <th scope="col" class="px-4 py-3">Item Name</th>
+                                                <th scope="col" class="px-4 py-3">Grade</th>
+                                                <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                                        ${item.name}
-                                                    </th>
-                                                    <td class="px-6 py-4">${item.sku}</td>
-                                                    <td class="px-6 py-4">${item.description || '-'}</td>
-                                                    <td class="px-6 py-4">Level ${item.shelf_position}</td>
-                                                    <td class="px-6 py-4 text-right">
-                                                        <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                            ${item.quantity} ${item.unit}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            `;
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                        <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                        <td class="px-4 py-3">${item.grade || '-'}</td>
+                                        <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                        <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                        <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                        <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                        <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                    </tr>`;
                         });
                     } else {
                         html += `
-                                            <tr class="bg-white dark:bg-gray-800">
-                                                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                                    No items on this shelf
-                                                </td>
-                                            </tr>
-                                        `;
+                                <tr class="bg-white dark:bg-gray-800">
+                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                        No items in this location
+                                    </td>
+                                </tr>`;
                     }
 
                     html += `
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>`;
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');

@@ -12,52 +12,66 @@ class WarehouseInventorySeeder extends Seeder
     public function run(): void
     {
         $now = Carbon::now();
-
         $shelves = WarehouseShelf::all();
 
         $sampleItems = [
             [
-                'name' => 'Office Paper A4',
-                'sku' => 'PAP-A4-001',
-                'description' => 'Standard A4 printing paper',
-                'quantity' => 500,
-                'unit' => 'reams'
+                'item_number' => '040007895',
+                'item_name' => 'EcoTank L5290',
+                'grade' => 'Good',
+                'batch_number' => '1041065',
+                'bom_unit' => 'ROL',
+                'physical_inventory' => 19,
+                'physical_reserved' => 19,
+                'actual_count' => 19,
             ],
             [
-                'name' => 'Ink Cartridge Black',
-                'sku' => 'INK-BLK-001',
-                'description' => 'Black ink cartridge for HP printers',
-                'quantity' => 50,
-                'unit' => 'pieces'
+                'item_number' => '040007896',
+                'item_name' => 'NVME SSD 1TB',
+                'grade' => 'Good',
+                'batch_number' => '1041066',
+                'bom_unit' => 'ROL',
+                'physical_inventory' => 25,
+                'physical_reserved' => 20,
+                'actual_count' => 25,
             ],
             [
-                'name' => 'Office Chairs',
-                'sku' => 'FRN-CHR-001',
-                'description' => 'Ergonomic office chairs',
-                'quantity' => 20,
-                'unit' => 'pieces'
+                'item_number' => '040007897',
+                'item_name' => 'Notebook A5 80gsm',
+                'grade' => 'Fair',
+                'batch_number' => '1041067',
+                'bom_unit' => 'ROL',
+                'physical_inventory' => 15,
+                'physical_reserved' => 10,
+                'actual_count' => 15,
             ],
             [
-                'name' => 'Laptops',
-                'sku' => 'EQP-LPT-001',
-                'description' => 'Company standard laptops',
-                'quantity' => 10,
-                'unit' => 'units'
+                'item_number' => '040007898',
+                'item_name' => 'LAPTOP DELL LATITUDE 5410',
+                'grade' => 'Good',
+                'batch_number' => '1041068',
+                'bom_unit' => 'ROL',
+                'physical_inventory' => 30,
+                'physical_reserved' => 25,
+                'actual_count' => 30,
+            ],
+            [
+                'item_number' => '040007899',
+                'item_name' => 'LAPTOP DELL LATITUDE 5420',
+                'grade' => 'New',
+                'batch_number' => '2041069',
+                'bom_unit' => 'UNIT',
+                'physical_inventory' => 5,
+                'physical_reserved' => 3,
+                'actual_count' => 5,
             ],
         ];
 
         foreach ($shelves as $shelf) {
-            // Add 2 random items to each shelf
-            for ($i = 0; $i < 2; $i++) {
-                $item = $sampleItems[array_rand($sampleItems)];
+            foreach ($sampleItems as $item) {
                 WarehouseInventory::create([
-                    'shelf_id' => $shelf->id,
-                    'name' => $item['name'],
-                    'sku' => $item['sku'] . "-{$shelf->id}-{$i}",
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit' => $item['unit'],
-                    'shelf_position' => $i + 1,
+                    ...$item,
+                    'location_code' => $shelf->location_code,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);

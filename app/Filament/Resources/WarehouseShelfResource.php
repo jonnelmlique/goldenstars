@@ -28,6 +28,12 @@ class WarehouseShelfResource extends Resource
             Forms\Components\TextInput::make('code')
                 ->required()
                 ->unique(ignoreRecord: true),
+            Forms\Components\TextInput::make('location_code')
+                ->label('Location Code')
+                ->required()
+                ->placeholder('e.g. LOCATION A0171')
+                ->helperText('Specific location code for this shelf')
+                ->maxLength(20),
             Forms\Components\TextInput::make('level')
                 ->numeric()
                 ->required()
@@ -47,6 +53,9 @@ class WarehouseShelfResource extends Resource
             Tables\Columns\TextColumn::make('name')
                 ->searchable(),
             Tables\Columns\TextColumn::make('code')
+                ->searchable(),
+            Tables\Columns\TextColumn::make('location_code')
+                ->label('Location Code')
                 ->searchable(),
             Tables\Columns\TextColumn::make('level'),
             Tables\Columns\TextColumn::make('capacity'),

@@ -7,15 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        Schema::dropIfExists('warehouse_inventory');
+
         Schema::create('warehouse_inventory', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shelf_id')->constrained('warehouse_shelves')->cascadeOnDelete();
-            $table->string('name');
-            $table->string('sku')->unique();
-            $table->text('description')->nullable();
-            $table->integer('quantity');
-            $table->string('unit');
-            $table->integer('shelf_position')->default(1);
+            $table->string('item_number');
+            $table->string('item_name');
+            $table->string('grade');
+            $table->string('batch_number');
+            $table->string('location_code');
+            $table->string('bom_unit');
+            $table->integer('physical_inventory');
+            $table->integer('physical_reserved');
+            $table->integer('actual_count');
             $table->timestamps();
         });
     }

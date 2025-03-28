@@ -10,17 +10,19 @@ class WarehouseInventory extends Model
     protected $table = 'warehouse_inventory';
 
     protected $fillable = [
-        'shelf_id',
-        'name',
-        'sku',
-        'description',
-        'quantity',
-        'unit',
-        'shelf_position',
+        'item_number',
+        'item_name',
+        'grade',
+        'batch_number',
+        'location_code',
+        'bom_unit',
+        'physical_inventory',
+        'physical_reserved',
+        'actual_count',
     ];
 
     public function shelf(): BelongsTo
     {
-        return $this->belongsTo(WarehouseShelf::class);
+        return $this->belongsTo(WarehouseShelf::class, 'location_code', 'location_code');
     }
 }
