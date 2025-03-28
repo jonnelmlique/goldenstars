@@ -47,22 +47,24 @@ class WarehouseShelfResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            Tables\Columns\TextColumn::make('location.name')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('name')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('code')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('location_code')
-                ->label('Location Code')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('level'),
-            Tables\Columns\TextColumn::make('capacity'),
-            Tables\Columns\TextColumn::make('items_count')
-                ->counts('items')
-                ->label('Items'),
-        ])
+        return $table
+            ->defaultSort('created_at', 'desc')
+            ->columns([
+                Tables\Columns\TextColumn::make('location.name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('code')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('location_code')
+                    ->label('Location Code')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('level'),
+                Tables\Columns\TextColumn::make('capacity'),
+                Tables\Columns\TextColumn::make('items_count')
+                    ->counts('items')
+                    ->label('Items'),
+            ])
             ->filters([
                 Tables\Filters\SelectFilter::make('location')
                     ->relationship('location', 'name')

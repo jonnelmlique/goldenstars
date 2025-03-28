@@ -42,13 +42,15 @@ class WarehouseLocationResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            Tables\Columns\TextColumn::make('name')->searchable(),
-            Tables\Columns\TextColumn::make('code')->searchable(),
-            Tables\Columns\TextColumn::make('shelves_count')
-                ->counts('shelves')
-                ->label('Shelves'),
-        ])
+        return $table
+            ->defaultSort('created_at', 'desc')
+            ->columns([
+                Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('code')->searchable(),
+                Tables\Columns\TextColumn::make('shelves_count')
+                    ->counts('shelves')
+                    ->label('Shelves'),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

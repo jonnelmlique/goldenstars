@@ -86,6 +86,7 @@ class TicketResource extends Resource
                 'md' => 2,
                 'xl' => 3,
             ])
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\Layout\Stack::make([
                     Tables\Columns\Layout\Panel::make(schema: [

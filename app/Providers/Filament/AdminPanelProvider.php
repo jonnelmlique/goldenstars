@@ -20,7 +20,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\Pages\Profile;
 use App\Filament\Pages\ChangePassword;
-use Illuminate\Support\HtmlString;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -89,7 +88,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::scripts.after',
-                fn() => new HtmlString('@vite(["resources/js/app.js"])')
+                fn() => "@vite(['resources/js/app.js'])"
             );
     }
 }
