@@ -86,10 +86,6 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Resources\WarehouseShelfResource::class,
                 \App\Filament\Resources\WarehouseInventoryResource::class,
             ])
-            ->renderHook(
-                'panels::scripts.after',
-                fn() => '<script src="' . asset('build/assets/app.js') . '"></script>'
-            )
             ->plugins([
                 LightSwitchPlugin::make(),
             ]);
