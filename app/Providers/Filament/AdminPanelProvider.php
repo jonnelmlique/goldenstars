@@ -90,7 +90,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::scripts.after',
-                fn() => "@vite(['resources/js/app.js'])"
+                fn() => '<script src="' . asset('build/assets/app.js') . '"></script>'
             )
             ->plugins([
                 LightSwitchPlugin::make(),
