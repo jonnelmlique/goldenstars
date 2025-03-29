@@ -1,7 +1,9 @@
 <x-filament::page>
     <div class="space-y-6">
-        <div id="warehouse-container" class="w-full h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg">
-            <canvas id="three-canvas" class="w-full h-full"></canvas>
+        <div class="flex justify-center">
+            <div id="warehouse-container" class="w-full max-w-5xl h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg">
+                <canvas id="three-canvas" class="w-full h-full"></canvas>
+            </div>
         </div>
 
         {{-- Location List --}}
@@ -541,56 +543,56 @@
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                                                        <div class="space-y-4">
-                                                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                                                <span>Code: ${shelf.code}</span>
-                                                                <span>Location Code: ${shelf.location_code}</span>
-                                                                <span>Capacity: ${shelf.capacity} units</span>
-                                                            </div>
+                                                            <div class="space-y-4">
+                                                                <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                                    <span>Code: ${shelf.code}</span>
+                                                                    <span>Location Code: ${shelf.location_code}</span>
+                                                                    <span>Capacity: ${shelf.capacity} units</span>
+                                                                </div>
 
-                                                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                                        <tr>
-                                                                            <th scope="col" class="px-4 py-3">Item Number</th>
-                                                                            <th scope="col" class="px-4 py-3">Item Name</th>
-                                                                            <th scope="col" class="px-4 py-3">Batch No.</th>
-                                                                            <th scope="col" class="px-4 py-3">BOM Unit</th>
-                                                                            <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
-                                                                            <th scope="col" class="px-4 py-3 text-right">Reserved</th>
-                                                                            <th scope="col" class="px-4 py-3 text-right">Actual</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>`;
+                                                                <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                            <tr>
+                                                                                <th scope="col" class="px-4 py-3">Item Number</th>
+                                                                                <th scope="col" class="px-4 py-3">Item Name</th>
+                                                                                <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                                                <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                                                <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                                                <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                                                <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                                    <td class="px-4 py-3">${item.item_number || '-'}</td>
-                                                                    <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                                                    <td class="px-4 py-3">${item.batch_number || '-'}</td>
-                                                                    <td class="px-4 py-3">${item.bom_unit || '-'}</td>
-                                                                    <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
-                                                                    <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
-                                                                    <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
-                                                                </tr>`;
+                                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                        <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                                                        <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                                                        <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                                                        <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                                                        <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                                                        <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                                                        <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                                                    </tr>`;
                         });
                     } else {
                         html += `
-                                                            <tr class="bg-white dark:bg-gray-800">
-                                                                <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                                                    No items in this location
-                                                                </td>
-                                                            </tr>`;
+                                                                <tr class="bg-white dark:bg-gray-800">
+                                                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                                                        No items in this location
+                                                                    </td>
+                                                                </tr>`;
                     }
 
                     html += `
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>`;
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');

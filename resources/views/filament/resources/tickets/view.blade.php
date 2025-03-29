@@ -51,7 +51,7 @@
             <div>
                 <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Requestor</div>
                 <div class="flex items-center gap-1 text-gray-900 dark:text-white">
-                    <x-heroicon-m-user class="w-4 h-4 text-warning-500" />
+                    <x-heroicon-m-user class="w-4 h-4 text-primary-500" />
                     {{ $ticket->requested_by ?? $ticket->requestor->name }}
                 </div>
             </div>
@@ -65,7 +65,7 @@
             <div>
                 <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Requestor Department</div>
                 <div class="flex items-center gap-1 text-gray-900 dark:text-white">
-                    <x-heroicon-m-building-office-2 class="w-4 h-4 text-warning-500" />
+                    <x-heroicon-m-building-office-2 class="w-4 h-4 text-primary-500" />
                     {{ $ticket->requestor->department->name }}
                 </div>
             </div>
