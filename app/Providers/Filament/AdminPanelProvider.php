@@ -20,6 +20,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\Pages\Profile;
 use App\Filament\Pages\ChangePassword;
+use Awcodes\LightSwitch\LightSwitchPlugin;
+use Awcodes\LightSwitch\Enums\Alignment;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -89,6 +91,9 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 'panels::scripts.after',
                 fn() => "@vite(['resources/js/app.js'])"
-            );
+            )
+            ->plugins([
+                LightSwitchPlugin::make(),
+            ]);
     }
 }
