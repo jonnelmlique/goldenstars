@@ -39,7 +39,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
-                \App\Filament\Pages\CompleteProfile::class,
                 \App\Filament\Pages\Profile::class,
                 \App\Filament\Pages\ChangePassword::class,
                 \App\Filament\Pages\WarehouseView::class,
@@ -60,7 +59,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\EnsureProfileIsComplete::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
