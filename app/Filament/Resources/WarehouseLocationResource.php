@@ -61,19 +61,21 @@ class WarehouseLocationResource extends Resource
                     ->modalHeading('Edit Location')
                     ->slideOver(),
                 Tables\Actions\DeleteAction::make()
-                ->modalHeading('Delete Location')
-                ->slideOver(),
+                    ->modalHeading('Delete Location')
+                    ->slideOver(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->modalHeading('Create Location')
-                    ->slideOver(),
+                    ->slideOver()
+                    ->icon(icon: 'heroicon-m-plus'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                    ->modalHeading('Delete Location')
-                    ->slideOver(),
+                        ->modalHeading('Delete Selected Location')
+                        ->slideOver(),
                 ]),
             ]);
     }

@@ -61,7 +61,9 @@ class UserResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->headerActions([
-                Tables\Actions\CreateAction::make()->slideOver(),
+                Tables\Actions\CreateAction::make()->slideOver()
+                    ->icon(icon: 'heroicon-m-plus'),
+
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')

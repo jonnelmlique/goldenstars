@@ -14,7 +14,7 @@ class BuildingSeeder extends Seeder
 
         $buildings = [
             [
-                'code' => 'Goldenstas',
+                'code' => 'Goldenstars',
                 'name' => 'Goldenstars',
                 'description' => 'Goldenstars',
                 'location' => 'Quezon City',

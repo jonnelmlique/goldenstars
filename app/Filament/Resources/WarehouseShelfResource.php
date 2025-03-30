@@ -89,7 +89,9 @@ class WarehouseShelfResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->modalHeading('Delete Selected Shelf')
-                        ->slideOver(),
+                        ->slideOver()
+                        ->icon(icon: 'heroicon-m-plus'),
+
                 ]),
             ]);
     }

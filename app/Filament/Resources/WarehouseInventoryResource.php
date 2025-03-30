@@ -97,7 +97,9 @@ class WarehouseInventoryResource extends Resource
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->modalHeading('Create Inventory')
-                    ->slideOver(),
+                    ->slideOver()
+                    ->icon(icon: 'heroicon-m-plus'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
