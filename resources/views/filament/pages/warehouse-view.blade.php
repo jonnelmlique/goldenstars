@@ -128,7 +128,7 @@
                                 floor.position.set(x, -0.1, z);
 
                                 // Add grid lines
-                                const gridHelper = new window.THREE.GridHelper(cellSize, 8, 0x006400, 0x008000);
+                                const gridHelper = new window.THREE.GridHelper(cellSize, 8, 0x888888, 0xcccccc);
                                 gridHelper.position.set(x, 0, z);
 
                                 // Create floating coordinate display
