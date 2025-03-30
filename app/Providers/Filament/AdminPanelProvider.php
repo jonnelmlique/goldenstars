@@ -20,7 +20,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 use App\Filament\Pages\Profile;
 use App\Filament\Pages\ChangePassword;
-use Illuminate\Support\HtmlString;  // Add this import at the top
+use Awcodes\LightSwitch\LightSwitchPlugin;
+use Awcodes\LightSwitch\Enums\Alignment;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -29,9 +30,8 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('app')
-            ->path('app') // Change from 'app' to empty string
+            ->path('app')
             ->login(\App\Filament\Pages\Auth\Login::class)
-            // ->registration(\App\Filament\Pages\Auth\Register::class)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -39,7 +39,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
-                \App\Filament\Pages\CompleteProfile::class,
                 \App\Filament\Pages\Profile::class,
                 \App\Filament\Pages\ChangePassword::class,
                 \App\Filament\Pages\WarehouseView::class,
@@ -60,7 +59,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\EnsureProfileIsComplete::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -88,12 +86,8 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Resources\WarehouseShelfResource::class,
                 \App\Filament\Resources\WarehouseInventoryResource::class,
             ])
-            ->renderHook(
-                'panels::scripts.after',
-                fn() => new HtmlString('
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-                ')
-            );
+            ->plugins([
+                LightSwitchPlugin::make(),
+            ]);
     }
 }

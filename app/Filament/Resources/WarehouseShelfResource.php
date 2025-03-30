@@ -47,22 +47,31 @@ class WarehouseShelfResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            Tables\Columns\TextColumn::make('location.name')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('name')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('code')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('location_code')
-                ->label('Location Code')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('level'),
-            Tables\Columns\TextColumn::make('capacity'),
-            Tables\Columns\TextColumn::make('items_count')
-                ->counts('items')
-                ->label('Items'),
-        ])
+        return $table
+            ->defaultSort('created_at', 'desc')
+            ->columns([
+                Tables\Columns\TextColumn::make('location.name')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('code')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('location_code')
+                    ->label('Location Code')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('level')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('capacity')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('items_count')
+                    ->counts('items')
+                    ->label('Items')
+                    ->toggleable(),
+            ])
             ->filters([
                 Tables\Filters\SelectFilter::make('location')
                     ->relationship('location', 'name')
@@ -70,6 +79,11 @@ class WarehouseShelfResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
     }
 
