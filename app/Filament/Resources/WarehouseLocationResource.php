@@ -57,8 +57,15 @@ class WarehouseLocationResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Edit Location')
+                    ->slideOver(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->modalHeading('Create Location')
+                    ->slideOver(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -71,8 +78,6 @@ class WarehouseLocationResource extends Resource
     {
         return [
             'index' => \App\Filament\Resources\WarehouseLocationResource\Pages\ListWarehouseLocations::route('/'),
-            'create' => \App\Filament\Resources\WarehouseLocationResource\Pages\CreateWarehouseLocation::route('/create'),
-            'edit' => \App\Filament\Resources\WarehouseLocationResource\Pages\EditWarehouseLocation::route('/{record}/edit'),
         ];
     }
 

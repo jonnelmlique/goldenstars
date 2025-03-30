@@ -87,14 +87,20 @@ class WarehouseInventoryResource extends Resource
                     })
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Edit Inventory')
+                    ->slideOver(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->modalHeading('Create Inventory')
+                    ->slideOver(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            
             ]);
     }
 
@@ -122,8 +128,6 @@ class WarehouseInventoryResource extends Resource
     {
         return [
             'index' => \App\Filament\Resources\WarehouseInventoryResource\Pages\ListWarehouseInventory::route('/'),
-            'create' => \App\Filament\Resources\WarehouseInventoryResource\Pages\CreateWarehouseInventory::route('/create'),
-            'edit' => \App\Filament\Resources\WarehouseInventoryResource\Pages\EditWarehouseInventory::route('/{record}/edit'),
         ];
     }
 }

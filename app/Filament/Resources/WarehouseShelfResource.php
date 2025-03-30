@@ -72,13 +72,16 @@ class WarehouseShelfResource extends Resource
                     ->label('Items')
                     ->toggleable(),
             ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('location')
-                    ->relationship('location', 'name')
-            ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Edit Shelf')
+                    ->slideOver(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->modalHeading('Create Shelf')
+                    ->slideOver(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -111,8 +114,6 @@ class WarehouseShelfResource extends Resource
     {
         return [
             'index' => \App\Filament\Resources\WarehouseShelfResource\Pages\ListWarehouseShelves::route('/'),
-            'create' => \App\Filament\Resources\WarehouseShelfResource\Pages\CreateWarehouseShelf::route('/create'),
-            'edit' => \App\Filament\Resources\WarehouseShelfResource\Pages\EditWarehouseShelf::route('/{record}/edit'),
         ];
     }
 }
