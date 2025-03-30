@@ -43,7 +43,6 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Pages\ChangePassword::class,
                 \App\Filament\Pages\WarehouseView::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 \App\Filament\Widgets\TicketStatsOverview::class,
                 \App\Filament\Widgets\TicketsChart::class,
