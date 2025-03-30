@@ -68,6 +68,11 @@ class InventoryItemResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->headerActions([
+                Tables\Actions\CreateAction::make()->slideOver()
+                    ->icon('heroicon-m-plus'),
+
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('item_name')
                     ->searchable(),
@@ -110,8 +115,15 @@ class InventoryItemResource extends Resource
                     ->label('Defective Items'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->slideOver(),
+                Tables\Actions\DeleteAction::make()->slideOver(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Delete Selected Buildings')
+                        ->slideOver(),
+                ]),
             ]);
     }
 

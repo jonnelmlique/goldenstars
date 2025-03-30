@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 class TicketResource extends Resource
@@ -86,7 +87,6 @@ class TicketResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
-                    ->sortable()
                     ->limit(50)
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
@@ -112,29 +112,31 @@ class TicketResource extends Resource
                     })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('category.name')
-                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('requestor.name')
-                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('assignee.name')
                     ->default('Unassigned')
-                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('building.name')
-                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('department.code')
-                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->modalHeading('Create New Ticket')
+                    ->slideOver()
+                    ->icon('heroicon-m-plus'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('view')
+                        ->modalHeading('View Ticket Details')
+                        ->slideOver()
                         ->icon('heroicon-m-eye')
                         ->modalContent(fn(Ticket $record) => view(
                             'filament.resources.tickets.view',
@@ -144,8 +146,12 @@ class TicketResource extends Resource
                         ->modalCancelAction(false)
                         ->modalWidth('4xl'),
                     Tables\Actions\EditAction::make()
+                        ->modalHeading('Edit Ticket')
+                        ->slideOver()
                         ->icon('heroicon-m-pencil'),
                     Tables\Actions\Action::make('assign')
+                        ->modalHeading('Assign Ticket')
+                        ->slideOver()
                         ->color('info')
                         ->icon('heroicon-m-user-plus')
                         ->form([
@@ -164,6 +170,12 @@ class TicketResource extends Resource
                                 'assignee_id' => $data['assignee_id'],
                                 'status' => 'open'
                             ]);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Ticket Assigned')
+                                ->body("Ticket has been assigned successfully.")
+                                ->send();
                         })
                         ->visible(
                             fn(Ticket $record) =>
@@ -176,13 +188,31 @@ class TicketResource extends Resource
                         ->color('warning')
                         ->icon('heroicon-m-play')
                         ->visible(fn(Ticket $record) => $record->status === 'open' && auth()->user()->id === $record->assignee_id)
-                        ->action(fn(Ticket $record) => $record->update(['status' => 'in_progress'])),
+                        ->action(function (Ticket $record) {
+                            $record->update(['status' => 'in_progress']);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Ticket Status Updated')
+                                ->body("Ticket has been marked as in progress.")
+                                ->send();
+                        }),
                     Tables\Actions\Action::make('mark_resolved')
                         ->color('success')
                         ->icon('heroicon-m-check')
                         ->visible(fn(Ticket $record) => $record->status === 'in_progress' && auth()->user()->id === $record->assignee_id)
-                        ->action(fn(Ticket $record) => $record->update(['status' => 'resolved'])),
+                        ->action(function (Ticket $record) {
+                            $record->update(['status' => 'resolved']);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Ticket Resolved')
+                                ->body("Ticket has been marked as resolved.")
+                                ->send();
+                        }),
                     Tables\Actions\Action::make('mark_completed')
+                        ->modalHeading('Complete Ticket')
+                        ->slideOver()
                         ->color('success')
                         ->icon('heroicon-m-check-circle')
                         ->form([
@@ -201,6 +231,12 @@ class TicketResource extends Resource
                         ->action(function (Ticket $record, array $data): void {
                             $record->update(['status' => 'completed']);
                             $record->rating()->create($data);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Ticket Completed')
+                                ->body("Ticket has been marked as completed with rating.")
+                                ->send();
                         })
                         ->visible(fn(Ticket $record) => $record->canBeMarkedAsCompleted() && auth()->user()->id === $record->requestor_id),
                 ])

@@ -60,6 +60,9 @@ class UserResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->headerActions([
+                Tables\Actions\CreateAction::make()->slideOver(),
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -85,9 +88,10 @@ class UserResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->slideOver(),
                 Tables\Actions\Action::make('change_password')
                     ->icon('heroicon-o-key')
+                    ->slideOver()
                     ->form([
                         Forms\Components\TextInput::make('new_password')
                             ->label('New Password')
@@ -114,11 +118,11 @@ class UserResource extends Resource
                     })
                     ->modalHeading('Change Password')
                     ->modalButton('Update Password'),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()->slideOver(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->slideOver(),
                 ]),
             ]);
     }
@@ -152,6 +156,10 @@ class UserResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
+        if ($record->id === 1) {
+            return false;
+        }
+
         return auth()->user()->hasPermission('users.delete');
     }
 }

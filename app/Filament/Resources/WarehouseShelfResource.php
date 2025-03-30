@@ -76,7 +76,9 @@ class WarehouseShelfResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->modalHeading('Edit Shelf')
                     ->slideOver(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Delete Shelf')
+                    ->slideOver(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
@@ -85,7 +87,9 @@ class WarehouseShelfResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Delete Selected Shelf')
+                        ->slideOver(),
                 ]),
             ]);
     }

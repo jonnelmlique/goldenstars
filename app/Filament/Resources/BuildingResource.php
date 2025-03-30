@@ -59,12 +59,25 @@ class BuildingResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Edit Building')
+                    ->slideOver(),
+                Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Delete Building')
+                    ->slideOver(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->modalHeading('Create Building')
+                    ->slideOver()
+                    ->icon('heroicon-m-plus'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Delete Selected Buildings')
+                        ->slideOver(),
                 ]),
             ]);
     }

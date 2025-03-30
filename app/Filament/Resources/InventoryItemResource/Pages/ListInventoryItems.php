@@ -13,8 +13,8 @@ class ListInventoryItems extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->modalWidth('lg'),
+            // Actions\CreateAction::make()
+            //     ->modalWidth('lg'),
         ];
     }
 }

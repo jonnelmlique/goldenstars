@@ -60,7 +60,9 @@ class WarehouseLocationResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->modalHeading('Edit Location')
                     ->slideOver(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->modalHeading('Delete Location')
+                ->slideOver(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
@@ -69,7 +71,9 @@ class WarehouseLocationResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->modalHeading('Delete Location')
+                    ->slideOver(),
                 ]),
             ]);
     }
