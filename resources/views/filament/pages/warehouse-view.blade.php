@@ -97,8 +97,102 @@
                 directionalLight.position.set(10, 10, 10);
                 scene.add(directionalLight);
 
-                // Create warehouse locations
+                // Initialize locations first
                 const locations = @json($locations);
+
+                // Add available locations grid
+                function createAvailableLocationsGrid(scene) {
+                    const gridSize = 50;
+                    const cellSize = 7;
+                    const spacing = 8;
+
+                    for (let x = -gridSize / 2; x <= gridSize / 2; x += spacing) {
+                        for (let z = -gridSize / 2; z <= gridSize / 2; z += spacing) {
+                            const locationExists = locations.some(loc =>
+                                Math.abs(loc.x_position - x) < 0.1 &&
+                                Math.abs(loc.z_position - z) < 0.1
+                            );
+
+                            if (!locationExists) {
+                                // Create floor with grid pattern
+                                const floorGeometry = new window.THREE.PlaneGeometry(cellSize, cellSize);
+                                const floorMaterial = new window.THREE.MeshStandardMaterial({
+                                    color: 0x90EE90,
+                                    transparent: true,
+                                    opacity: 0.3,
+                                    metalness: 0.2,
+                                    roughness: 0.8
+                                });
+                                const floor = new window.THREE.Mesh(floorGeometry, floorMaterial);
+                                floor.rotation.x = -Math.PI / 2;
+                                floor.position.set(x, -0.1, z);
+
+                                // Add grid lines
+                                const gridHelper = new window.THREE.GridHelper(cellSize, 8, 0x006400, 0x008000);
+                                gridHelper.position.set(x, 0, z);
+
+                                // Create floating coordinate display
+                                const canvas = document.createElement('canvas');
+                                const context = canvas.getContext('2d');
+                                canvas.width = 512; // Doubled width
+                                canvas.height = 128; // Doubled height
+
+                                // Background with gradient
+                                const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+                                gradient.addColorStop(0, 'rgba(0, 100, 0, 0.9)');
+                                gradient.addColorStop(1, 'rgba(0, 100, 0, 0.7)');
+                                context.fillStyle = gradient;
+                                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                                // Add border
+                                context.strokeStyle = '#ffffff';
+                                context.lineWidth = 4; // Thicker border
+                                context.strokeRect(0, 0, canvas.width, canvas.height);
+
+                                // Simple coordinate text with larger font
+                                context.font = 'bold 64px Arial'; // Doubled font size
+                                context.fillStyle = '#ffffff';
+                                context.textAlign = 'center';
+                                context.textBaseline = 'middle';
+                                context.fillText(`X ${x}, Y 0, Z ${z}`, canvas.width / 2, canvas.height / 2);
+
+                                const texture = new window.THREE.CanvasTexture(canvas);
+                                const labelGeometry = new window.THREE.PlaneGeometry(4, 1); // Doubled geometry size
+                                const labelMaterial = new window.THREE.MeshBasicMaterial({
+                                    map: texture,
+                                    transparent: true,
+                                    side: window.THREE.DoubleSide,
+                                    depthWrite: false
+                                });
+                                const label = new window.THREE.Mesh(labelGeometry, labelMaterial);
+
+                                // Make label float and always face camera
+                                label.position.set(x, 2, z); // Float 2 units above the floor
+                                label.rotation.x = -Math.PI / 4; // Tilt for better visibility
+
+                                // Add a simple animation to make it float
+                                const animate = () => {
+                                    label.position.y = 2 + Math.sin(Date.now() * 0.002) * 0.1; // Gentle floating motion
+                                    requestAnimationFrame(animate);
+                                };
+                                animate();
+
+                                scene.add(floor);
+                                scene.add(gridHelper);
+                                scene.add(label);
+
+                                // Add label to an array for updating rotation
+                                if (!window.coordinateLabels) {
+                                    window.coordinateLabels = [];
+                                }
+                                window.coordinateLabels.push(label);
+                            }
+                        }
+                    }
+                }
+
+                // Create warehouse locations
+                createAvailableLocationsGrid(scene);
                 locations.forEach(location => {
                     createLocation(scene, location);
                 });
@@ -165,6 +259,14 @@
                 function animate() {
                     requestAnimationFrame(animate);
                     controls.update();
+
+                    // Make coordinate labels face camera
+                    if (window.coordinateLabels) {
+                        window.coordinateLabels.forEach(label => {
+                            label.lookAt(camera.position);
+                        });
+                    }
+
                     renderer.render(scene, camera);
                 }
 
@@ -543,56 +645,56 @@
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                                                            <div class="space-y-4">
-                                                                <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                                                    <span>Code: ${shelf.code}</span>
-                                                                    <span>Location Code: ${shelf.location_code}</span>
-                                                                    <span>Capacity: ${shelf.capacity} units</span>
-                                                                </div>
+                                                                <div class="space-y-4">
+                                                                    <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                                        <span>Code: ${shelf.code}</span>
+                                                                        <span>Location Code: ${shelf.location_code}</span>
+                                                                        <span>Capacity: ${shelf.capacity} units</span>
+                                                                    </div>
 
-                                                                <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                                                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                                            <tr>
-                                                                                <th scope="col" class="px-4 py-3">Item Number</th>
-                                                                                <th scope="col" class="px-4 py-3">Item Name</th>
-                                                                                <th scope="col" class="px-4 py-3">Batch No.</th>
-                                                                                <th scope="col" class="px-4 py-3">BOM Unit</th>
-                                                                                <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
-                                                                                <th scope="col" class="px-4 py-3 text-right">Reserved</th>
-                                                                                <th scope="col" class="px-4 py-3 text-right">Actual</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>`;
+                                                                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                                <tr>
+                                                                                    <th scope="col" class="px-4 py-3">Item Number</th>
+                                                                                    <th scope="col" class="px-4 py-3">Item Name</th>
+                                                                                    <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                                                    <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                                                    <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                                                    <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                                                    <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                                        <td class="px-4 py-3">${item.item_number || '-'}</td>
-                                                                        <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                                                        <td class="px-4 py-3">${item.batch_number || '-'}</td>
-                                                                        <td class="px-4 py-3">${item.bom_unit || '-'}</td>
-                                                                        <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
-                                                                        <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
-                                                                        <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
-                                                                    </tr>`;
+                                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                            <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                                                            <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                                                            <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                                                            <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                                                            <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                                                            <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                                                            <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                                                        </tr>`;
                         });
                     } else {
                         html += `
-                                                                <tr class="bg-white dark:bg-gray-800">
-                                                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                                                        No items in this location
-                                                                    </td>
-                                                                </tr>`;
+                                                                    <tr class="bg-white dark:bg-gray-800">
+                                                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                                                            No items in this location
+                                                                        </td>
+                                                                    </tr>`;
                     }
 
                     html += `
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            </div>`;
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');
