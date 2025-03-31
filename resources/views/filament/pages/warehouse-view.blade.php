@@ -354,15 +354,15 @@
                         container.add(pillar);
                     });
 
-                    // Create shelves
+                    // Create shelves with proper positioning
                     location.shelves.forEach((shelf, index) => {
-                        // Attach location data to shelf
                         shelf.location = {
                             id: location.id,
                             name: location.name,
                             code: location.code
                         };
                         const shelfGroup = createShelf(shelf, index);
+                        shelfGroup.position.y = 0.001; // Position slightly above the floor to prevent z-fighting
                         container.add(shelfGroup);
                     });
 
@@ -382,108 +382,153 @@
                     const currentLevel = parseInt(shelf.level) || 1;
                     const shelfItems = shelf.items.filter(item => item.location_code === shelf.location_code);
 
-                    // Modern shelf dimensions
+                    // Industrial warehouse shelf dimensions
                     const dims = {
-                        width: 2.2,      // Wider for better item display
-                        height: 2.6,     // Taller overall height
-                        depth: 0.8,      // Good depth for items
-                        thickness: 0.03,  // Thinner, more modern look
-                        spacing: 0.6,     // Level spacing
-                        frames: 0.04     // Frame thickness
+                        width: 2.8,      // Standard pallet width
+                        height: 4.0,     // Taller for industrial look
+                        depth: 1.2,      // Deeper for pallets
+                        thickness: 0.05, // Thicker for industrial strength
+                        spacing: 1.0,    // More vertical space for tall items
+                        frames: 0.08,    // Thicker frames for industrial look
+                        crossBeam: 0.06, // Thickness of cross support beams
+                        baseHeight: 0.1  // Height of base plate from ground
                     };
 
-                    // Modern materials with metallic finish
-                    const frameMaterial = new window.THREE.MeshStandardMaterial({
-                        color: 0x303030,
-                        metalness: 0.8,
-                        roughness: 0.2,
-                        envMapIntensity: 1
-                    });
+                    // Create base plate
+                    const basePlate = new window.THREE.Mesh(
+                        new window.THREE.BoxGeometry(dims.width + 0.2, dims.baseHeight, dims.depth + 0.2),
+                        new window.THREE.MeshStandardMaterial({
+                            color: 0x343a40,
+                            metalness: 0.7,
+                            roughness: 0.3
+                        })
+                    );
+                    basePlate.position.y = dims.baseHeight / 2; // Center the base plate above ground
+                    shelfGroup.add(basePlate);
 
-                    const shelfMaterial = new window.THREE.MeshStandardMaterial({
-                        color: 0x404040,
-                        metalness: 0.6,
-                        roughness: 0.3,
-                        envMapIntensity: 0.5
-                    });
-
-                    // Create vertical frames
-                    const frameGeometry = new window.THREE.BoxGeometry(dims.frames, dims.height, dims.frames);
-                    const corners = [
-                        [-dims.width / 2, dims.height / 2, -dims.depth / 2],
-                        [dims.width / 2, dims.height / 2, -dims.depth / 2],
-                        [-dims.width / 2, dims.height / 2, dims.depth / 2],
-                        [dims.width / 2, dims.height / 2, dims.depth / 2]
+                    // Create upright frames
+                    const framePositions = [
+                        [-dims.width / 2, dims.height / 2 + dims.baseHeight, -dims.depth / 2],
+                        [-dims.width / 2 + dims.frames, dims.height / 2 + dims.baseHeight, -dims.depth / 2],
+                        [dims.width / 2 - dims.frames, dims.height / 2 + dims.baseHeight, -dims.depth / 2],
+                        [dims.width / 2, dims.height / 2 + dims.baseHeight, -dims.depth / 2],
+                        [-dims.width / 2, dims.height / 2 + dims.baseHeight, dims.depth / 2],
+                        [-dims.width / 2 + dims.frames, dims.height / 2 + dims.baseHeight, dims.depth / 2],
+                        [dims.width / 2 - dims.frames, dims.height / 2 + dims.baseHeight, dims.depth / 2],
+                        [dims.width / 2, dims.height / 2 + dims.baseHeight, dims.depth / 2]
                     ];
 
-                    corners.forEach(([x, y, z]) => {
-                        const frame = new window.THREE.Mesh(frameGeometry, frameMaterial);
-                        frame.position.set(x, y, z);
-                        shelfGroup.add(frame);
+                    framePositions.forEach(([x, y, z]) => {
+                        const upright = new window.THREE.Group();
+
+                        // Main upright beam
+                        const frame = new window.THREE.Mesh(
+                            new window.THREE.BoxGeometry(dims.frames, dims.height, dims.frames),
+                            new window.THREE.MeshStandardMaterial({
+                                color: 0xfd7e14,
+                                metalness: 0.8,
+                                roughness: 0.5
+                            })
+                        );
+
+                        // Add mounting holes
+                        for (let h = 0.5; h < dims.height; h += 0.25) {
+                            const hole = new window.THREE.Mesh(
+                                new window.THREE.CylinderGeometry(0.02, 0.02, dims.frames + 0.02, 8),
+                                new window.THREE.MeshStandardMaterial({ color: 0x212529 })
+                            );
+                            hole.rotation.z = Math.PI / 2;
+                            hole.position.y = h - dims.height / 2;
+                            upright.add(hole);
+                        }
+
+                        upright.add(frame);
+                        upright.position.set(x, y, z);
+                        shelfGroup.add(upright);
                     });
 
-                    // Create shelf levels
+                    // Create levels
                     const levels = 4;
                     for (let i = 0; i < levels; i++) {
-                        const yPos = i * dims.spacing;
+                        const yPos = i * dims.spacing + dims.baseHeight;
 
                         // Create level group
                         const levelGroup = new window.THREE.Group();
 
-                        // Main shelf surface with glass-like material
-                        const shelfSurface = new window.THREE.Mesh(
-                            new window.THREE.BoxGeometry(dims.width, dims.thickness, dims.depth),
-                            new window.THREE.MeshPhysicalMaterial({
-                                color: 0x888888,
-                                metalness: 0.5,
-                                roughness: 0.2,
-                                transmission: 0.1,
-                                thickness: 0.5
-                            })
-                        );
+                        // Front and back support beams
+                        const beamGeometry = new window.THREE.BoxGeometry(dims.width + dims.frames * 2, dims.crossBeam, dims.crossBeam);
+                        const frontBeam = new window.THREE.Mesh(beamGeometry, new window.THREE.MeshStandardMaterial({
+                            color: 0xfd7e14,
+                            metalness: 0.8,
+                            roughness: 0.5
+                        }));
+                        const backBeam = new window.THREE.Mesh(beamGeometry, new window.THREE.MeshStandardMaterial({
+                            color: 0xfd7e14,
+                            metalness: 0.8,
+                            roughness: 0.5
+                        }));
 
-                        // Add reinforcement bars
-                        const barGeometry = new window.THREE.BoxGeometry(dims.width, dims.frames, dims.frames);
-                        const frontBar = new window.THREE.Mesh(barGeometry, frameMaterial);
-                        const backBar = new window.THREE.Mesh(barGeometry, frameMaterial);
+                        frontBeam.position.set(0, 0, dims.depth / 2);
+                        backBeam.position.set(0, 0, -dims.depth / 2);
 
-                        frontBar.position.set(0, -dims.frames / 2, dims.depth / 2 - dims.frames / 2);
-                        backBar.position.set(0, -dims.frames / 2, -dims.depth / 2 + dims.frames / 2);
+                        // Side support beams
+                        const sideBeamGeometry = new window.THREE.BoxGeometry(dims.crossBeam, dims.crossBeam, dims.depth);
+                        const leftBeam = new window.THREE.Mesh(sideBeamGeometry, new window.THREE.MeshStandardMaterial({
+                            color: 0xfd7e14,
+                            metalness: 0.8,
+                            roughness: 0.5
+                        }));
+                        const rightBeam = new window.THREE.Mesh(sideBeamGeometry, new window.THREE.MeshStandardMaterial({
+                            color: 0xfd7e14,
+                            metalness: 0.8,
+                            roughness: 0.5
+                        }));
 
-                        levelGroup.add(shelfSurface, frontBar, backBar);
+                        leftBeam.position.set(-dims.width / 2, 0, 0);
+                        rightBeam.position.set(dims.width / 2, 0, 0);
+
+                        // Create pallet surface
+                        const palletGeometry = new window.THREE.BoxGeometry(dims.width, 0.04, dims.depth);
+                        const palletMaterial = new window.THREE.MeshStandardMaterial({
+                            color: 0x6c757d,
+                            metalness: 0.4,
+                            roughness: 0.6
+                        });
+                        const pallet = new window.THREE.Mesh(palletGeometry, palletMaterial);
+                        pallet.position.y = dims.crossBeam / 2;
+
+                        levelGroup.add(frontBeam, backBeam, leftBeam, rightBeam, pallet);
                         levelGroup.position.y = yPos;
                         shelfGroup.add(levelGroup);
 
-                        // Add items on current level
+                        // Add items on current level with better positioning
                         if (i + 1 === currentLevel) {
+                            const itemSpacing = dims.width / (shelfItems.length + 1);
                             shelfItems.forEach((item, itemIndex) => {
                                 const itemMesh = createInventoryItem(item);
-                                const xOffset = -dims.width / 2 + 0.3 + (itemIndex * 0.4);
                                 itemMesh.position.set(
-                                    xOffset,
-                                    yPos + 0.15,
+                                    -dims.width / 2 + itemSpacing * (itemIndex + 1),
+                                    yPos + 0.2,
                                     0
                                 );
                                 shelfGroup.add(itemMesh);
                             });
                         }
 
-                        // Level indicator with modern design
+                        // Add level indicators
                         const label = createLevelLabel(shelf.name, i + 1, currentLevel === i + 1);
                         label.position.set(
-                            dims.width / 2 + 0.15,
-                            yPos + 0.1,
+                            dims.width / 2 + 0.2,
+                            yPos + 0.15,
                             dims.depth / 2
                         );
                         shelfGroup.add(label);
                     }
 
-                    // Position shelf unit with more spacing
-                    shelfGroup.position.set(
-                        (index % 2) * 3.5 - 1.75,
-                        0,
-                        Math.floor(index / 2) * 3.5 - 1.75
-                    );
+                    // Position shelf unit with proper spacing and height
+                    const xPos = (index % 2) * 4.0 - 2.0;
+                    const zPos = Math.floor(index / 2) * 4.0 - 2.0;
+                    shelfGroup.position.set(xPos, 0, zPos); // Position at ground level
 
                     // Add shelf data
                     shelfGroup.userData = {
@@ -645,56 +690,56 @@
                     title.textContent = `${shelf.name} - ${shelf.location?.name || 'Unknown Location'}`;
 
                     let html = `
-                                                                <div class="space-y-4">
-                                                                    <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-                                                                        <span>Code: ${shelf.code}</span>
-                                                                        <span>Location Code: ${shelf.location_code}</span>
-                                                                        <span>Capacity: ${shelf.capacity} units</span>
-                                                                    </div>
+                                                                    <div class="space-y-4">
+                                                                        <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                                                            <span>Code: ${shelf.code}</span>
+                                                                            <span>Location Code: ${shelf.location_code}</span>
+                                                                            <span>Capacity: ${shelf.capacity} units</span>
+                                                                        </div>
 
-                                                                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
-                                                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                                                <tr>
-                                                                                    <th scope="col" class="px-4 py-3">Item Number</th>
-                                                                                    <th scope="col" class="px-4 py-3">Item Name</th>
-                                                                                    <th scope="col" class="px-4 py-3">Batch No.</th>
-                                                                                    <th scope="col" class="px-4 py-3">BOM Unit</th>
-                                                                                    <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
-                                                                                    <th scope="col" class="px-4 py-3 text-right">Reserved</th>
-                                                                                    <th scope="col" class="px-4 py-3 text-right">Actual</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>`;
+                                                                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                                                                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                                    <tr>
+                                                                                        <th scope="col" class="px-4 py-3">Item Number</th>
+                                                                                        <th scope="col" class="px-4 py-3">Item Name</th>
+                                                                                        <th scope="col" class="px-4 py-3">Batch No.</th>
+                                                                                        <th scope="col" class="px-4 py-3">BOM Unit</th>
+                                                                                        <th scope="col" class="px-4 py-3 text-right">Phys. Inv.</th>
+                                                                                        <th scope="col" class="px-4 py-3 text-right">Reserved</th>
+                                                                                        <th scope="col" class="px-4 py-3 text-right">Actual</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>`;
 
                     const items = shelf.items || [];
                     if (items.length > 0) {
                         items.forEach(item => {
                             html += `
-                                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                                            <td class="px-4 py-3">${item.item_number || '-'}</td>
-                                                                            <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
-                                                                            <td class="px-4 py-3">${item.batch_number || '-'}</td>
-                                                                            <td class="px-4 py-3">${item.bom_unit || '-'}</td>
-                                                                            <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
-                                                                            <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
-                                                                            <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
-                                                                        </tr>`;
+                                                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                                <td class="px-4 py-3">${item.item_number || '-'}</td>
+                                                                                <td class="px-4 py-3 font-medium">${item.item_name || '-'}</td>
+                                                                                <td class="px-4 py-3">${item.batch_number || '-'}</td>
+                                                                                <td class="px-4 py-3">${item.bom_unit || '-'}</td>
+                                                                                <td class="px-4 py-3 text-right">${item.physical_inventory || '0'}</td>
+                                                                                <td class="px-4 py-3 text-right">${item.physical_reserved || '0'}</td>
+                                                                                <td class="px-4 py-3 text-right">${item.actual_count || '0'}</td>
+                                                                            </tr>`;
                         });
                     } else {
                         html += `
-                                                                    <tr class="bg-white dark:bg-gray-800">
-                                                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                                                            No items in this location
-                                                                        </td>
-                                                                    </tr>`;
+                                                                        <tr class="bg-white dark:bg-gray-800">
+                                                                            <td colspan="8" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                                                                                No items in this location
+                                                                            </td>
+                                                                        </tr>`;
                     }
 
                     html += `
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                </div>`;
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>`;
 
                     content.innerHTML = html;
                     modal.classList.remove('hidden');
