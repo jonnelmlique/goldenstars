@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->decimal('x_position', 10, 2)->default(0);
             $table->decimal('y_position', 10, 2)->default(0);
             $table->decimal('z_position', 10, 2)->default(0);
+            $table->foreignId('building_id')->constrained('buildings')->onDelete('cascade');
             $table->timestamps();
         });
     }
