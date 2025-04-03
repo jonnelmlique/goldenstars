@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WarehouseInventory extends Model
 {
@@ -23,5 +24,15 @@ class WarehouseInventory extends Model
     public function shelf(): BelongsTo
     {
         return $this->belongsTo(WarehouseShelf::class, 'location_code', 'location_code');
+    }
+
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(WarehouseTransfer::class, 'inventory_id');
+    }
+
+    public function warehouseTransfers()
+    {
+        return $this->hasMany(WarehouseTransfer::class, 'inventory_id');
     }
 }

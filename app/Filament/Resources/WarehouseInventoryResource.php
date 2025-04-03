@@ -9,7 +9,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Enums\ActionsPosition;
+use Filament\Notifications\Notification; // Add this import
 use Illuminate\Database\Eloquent\Model;
+use App\Filament\Resources\WarehouseInventoryResource\RelationManagers;
 
 class WarehouseInventoryResource extends Resource
 {
@@ -87,9 +89,64 @@ class WarehouseInventoryResource extends Resource
                     })
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->modalHeading('View Inventory')
+                    ->url(fn(Model $record): string => static::getUrl('view', ['record' => $record])),
                 Tables\Actions\EditAction::make()
                     ->modalHeading('Edit Inventory')
                     ->slideOver(),
+                Tables\Actions\Action::make('transfer')
+                    ->icon('heroicon-o-arrow-path-rounded-square')
+                    ->form([
+                        Forms\Components\Select::make('to_location')
+                            ->label('Transfer to Location')
+                            ->options(function () {
+                                $shelves = \App\Models\WarehouseShelf::with(['location.building'])->get();
+                                return $shelves->mapWithKeys(function ($shelf) {
+                                    $buildingName = $shelf->location->building->name ?? 'Unknown';
+                                    return [$shelf->location_code => "{$shelf->location_code} ({$buildingName})"];
+                                })->toArray();
+                            })
+                            ->required()
+                            ->searchable(),
+                        Forms\Components\DatePicker::make('transfer_date')
+                            ->required()
+                            ->default(now()),
+                        Forms\Components\Textarea::make('notes')
+                            ->rows(3),
+                    ])
+                    ->action(function (array $data, $record): void {
+                        if ($record->actual_count <= 0) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Transfer Failed')
+                                ->body('Cannot transfer items with zero or negative actual count.')
+                                ->send();
+                            return;
+                        }
+
+                        // Create transfer history record
+                        \App\Models\WarehouseTransfer::create([
+                            'inventory_id' => $record->id,
+                            'from_location' => $record->location_code,
+                            'to_location' => $data['to_location'],
+                            'quantity' => $record->actual_count,
+                            'transfer_date' => $data['transfer_date'],
+                            'notes' => $data['notes'] ?? null,
+                            'status' => 'completed',
+                            'received_date' => now(),
+                        ]);
+
+                        // Update the location
+                        $record->update([
+                            'location_code' => $data['to_location']
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Transfer Successful')
+                            ->send();
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->modalHeading('Delete Inventory')
                     ->slideOver(),
@@ -98,8 +155,7 @@ class WarehouseInventoryResource extends Resource
                 Tables\Actions\CreateAction::make()
                     ->modalHeading('Create Inventory')
                     ->slideOver()
-                    ->icon(icon: 'heroicon-m-plus'),
-
+                    ->icon('heroicon-m-plus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -134,6 +190,14 @@ class WarehouseInventoryResource extends Resource
     {
         return [
             'index' => \App\Filament\Resources\WarehouseInventoryResource\Pages\ListWarehouseInventory::route('/'),
+            'view' => \App\Filament\Resources\WarehouseInventoryResource\Pages\ViewWarehouseInventory::route('/{record}'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\WarehouseInventoryResource\RelationManagers\TransfersRelationManager::class,
         ];
     }
 }
