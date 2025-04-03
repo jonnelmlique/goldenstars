@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\WarehouseLocation;
 use App\Models\WarehouseInventory;
+use App\Models\Building;
 use Filament\Pages\Page;
 
 class WarehouseView extends Page
@@ -15,6 +16,7 @@ class WarehouseView extends Page
     protected static ?int $navigationSort = 1;
     public $locations;
     public $warehouseInventory;
+    public $buildings;
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -27,7 +29,8 @@ class WarehouseView extends Page
             return redirect()->back();
         }
 
-        $this->locations = WarehouseLocation::with(['shelves.items'])->get();
+        $this->buildings = Building::all();
+        $this->locations = WarehouseLocation::with(['shelves.items', 'building'])->get();
         $this->warehouseInventory = WarehouseInventory::with(['shelf.location'])->get();
     }
 }
