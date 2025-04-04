@@ -33,8 +33,11 @@ class WarehouseInventoryResource extends Resource
             Forms\Components\Select::make('location_code')
                 ->label('Location')
                 ->options(function () {
-                    return \App\Models\WarehouseShelf::pluck('location_code', 'location_code')
-                        ->toArray();
+                    $shelves = \App\Models\WarehouseShelf::with(['location.building'])->get();
+                    return $shelves->mapWithKeys(function ($shelf) {
+                        $buildingName = $shelf->location?->building?->name ?? 'Unknown';
+                        return [$shelf->location_code => "{$shelf->location_code} - {$buildingName}"];
+                    })->toArray();
                 })
                 ->required()
                 ->searchable(),
@@ -43,13 +46,27 @@ class WarehouseInventoryResource extends Resource
                 ->required(),
             Forms\Components\TextInput::make('physical_inventory')
                 ->numeric()
-                ->required(),
+                ->required()
+                ->live()
+                ->afterStateUpdated(function ($state, $set, $get) {
+                    $reserved = intval($get('physical_reserved') ?? 0);
+                    $inventory = intval($state ?? 0);
+                    $set('actual_count', $inventory - $reserved);
+                }),
             Forms\Components\TextInput::make('physical_reserved')
                 ->numeric()
-                ->required(),
+                ->required()
+                ->live()
+                ->afterStateUpdated(function ($state, $set, $get) {
+                    $inventory = intval($get('physical_inventory') ?? 0);
+                    $reserved = intval($state ?? 0);
+                    $set('actual_count', $inventory - $reserved);
+                }),
             Forms\Components\TextInput::make('actual_count')
                 ->numeric()
-                ->required(),
+                ->required()
+                ->disabled()
+                ->dehydrated(),
         ]);
     }
 
@@ -57,99 +74,194 @@ class WarehouseInventoryResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->modifyQueryUsing(fn($query) => $query->with(['shelf.location.building']))
             ->columns([
                 Tables\Columns\TextColumn::make('item_number')
+                    ->label('Item No.')
                     ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->icon('heroicon-m-identification')
+                    ->color('primary')
+                    ->weight('bold')
+                    ->alignCenter()
+
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('item_name')
                     ->searchable()
+                    ->sortable()
+                    ->alignCenter()
+                    ->limit(30)
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('batch_number')
+                    ->icon('heroicon-m-hashtag')
                     ->searchable()
+                    ->alignCenter()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('location_code')
                     ->label('Location')
-                    ->searchable()
+                    ->formatStateUsing(function ($record) {
+                        $buildingName = $record->shelf?->location?->building?->name ?? 'Unknown';
+                        return view('filament.tables.columns.location-with-building', [
+                            'location' => $record->location_code,
+                            'building' => $buildingName
+                        ]);
+                    })
+                    ->searchable(query: function ($query, $search) {
+                        return $query->whereHas('shelf.location.building', function ($query) use ($search) {
+                            $query->where('name', 'like', "%{$search}%");
+                        })->orWhere('location_code', 'like', "%{$search}%");
+                    })
+                    ->icon('heroicon-m-map-pin')
+                    ->alignCenter()
+
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('bom_unit')
                     ->label('BOM Unit')
+                    ->badge()
+                    ->alignCenter()
+                    ->color('gray')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('physical_inventory')
+                    ->numeric()
+                    ->badge()
+                    ->alignCenter()
+                    ->color('info')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('physical_reserved')
+                    ->numeric()
+                    ->badge()
+                    ->alignCenter()
+                    ->color('warning')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('actual_count')
+                    ->numeric()
+                    ->badge()
+                    ->alignCenter()
+                    ->color('success')
                     ->toggleable(),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('building')
+                    ->label('Building')
+                    ->relationship('shelf.location.building', 'name')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('location_code')
+                    ->label('Location')
                     ->options(function () {
-                        return \App\Models\WarehouseShelf::pluck('location_code', 'location_code')
+                        return \App\Models\WarehouseShelf::with('location.building')
+                            ->get()
+                            ->mapWithKeys(function ($shelf) {
+                                $buildingName = $shelf->location?->building?->name ?? 'Unknown';
+                                return [$shelf->location_code => "{$shelf->location_code} - {$buildingName}"];
+                            })
                             ->toArray();
                     })
+                    ->searchable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->modalHeading('View Inventory')
-                    ->url(fn(Model $record): string => static::getUrl('view', ['record' => $record])),
-                Tables\Actions\EditAction::make()
-                    ->modalHeading('Edit Inventory')
-                    ->slideOver(),
-                Tables\Actions\Action::make('transfer')
-                    ->icon('heroicon-o-arrow-path-rounded-square')
-                    ->form([
-                        Forms\Components\Select::make('to_location')
-                            ->label('Transfer to Location')
-                            ->options(function () {
-                                $shelves = \App\Models\WarehouseShelf::with(['location.building'])->get();
-                                return $shelves->mapWithKeys(function ($shelf) {
-                                    $buildingName = $shelf->location->building->name ?? 'Unknown';
-                                    return [$shelf->location_code => "{$shelf->location_code} ({$buildingName})"];
-                                })->toArray();
-                            })
-                            ->required()
-                            ->searchable(),
-                        Forms\Components\DatePicker::make('transfer_date')
-                            ->required()
-                            ->default(now()),
-                        Forms\Components\Textarea::make('notes')
-                            ->rows(3),
-                    ])
-                    ->action(function (array $data, $record): void {
-                        if ($record->actual_count <= 0) {
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->modalHeading('View Inventory')
+                        ->url(fn(Model $record): string => static::getUrl('view', ['record' => $record]))
+                        ->icon('heroicon-m-eye'),
+                    Tables\Actions\EditAction::make()
+                        ->modalHeading('Edit Inventory')
+                        ->slideOver()
+                        ->icon('heroicon-m-pencil-square'),
+                    Tables\Actions\Action::make('transfer')
+                        ->icon('heroicon-m-arrow-path-rounded-square')
+                        ->visible(fn(WarehouseInventory $record): bool => !$record->hasPendingTransfer())
+                        ->form([
+                            Forms\Components\Select::make('to_location')
+                                ->label('Transfer to Location')
+                                ->options(function () {
+                                    $shelves = \App\Models\WarehouseShelf::with(['location.building'])->get();
+                                    return $shelves->mapWithKeys(function ($shelf) {
+                                        $buildingName = $shelf->location->building->name ?? 'Unknown';
+                                        return [$shelf->location_code => "{$shelf->location_code} ({$buildingName})"];
+                                    })->toArray();
+                                })
+                                ->required()
+                                ->searchable(),
+                            Forms\Components\DatePicker::make('transfer_date')
+                                ->required()
+                                ->default(now()),
+                            Forms\Components\Textarea::make('notes')
+                                ->rows(3),
+                        ])
+                        ->action(function (array $data, $record): void {
+                            if ($record->actual_count <= 0) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Transfer Failed')
+                                    ->body('Cannot transfer items with zero or negative actual count.')
+                                    ->send();
+                                return;
+                            }
+
+                            // Create transfer history record with pending status
+                            \App\Models\WarehouseTransfer::create([
+                                'inventory_id' => $record->id,
+                                'from_location' => $record->location_code,
+                                'to_location' => $data['to_location'],
+                                'quantity' => $record->actual_count,
+                                'transfer_date' => $data['transfer_date'],
+                                'notes' => $data['notes'] ?? null,
+                                'status' => 'pending',
+                                'received_date' => null,
+                            ]);
+
                             Notification::make()
-                                ->danger()
-                                ->title('Transfer Failed')
-                                ->body('Cannot transfer items with zero or negative actual count.')
+                                ->success()
+                                ->title('Transfer Initiated')
+                                ->body('Transfer has been created and is pending reception.')
                                 ->send();
-                            return;
-                        }
+                        }),
+                    Tables\Actions\Action::make('receive')
+                        ->icon('heroicon-m-check-circle')
+                        ->color('success')
+                        ->visible(fn(WarehouseInventory $record): bool => $record->hasPendingTransfer())
+                        ->requiresConfirmation()
+                        ->action(function (WarehouseInventory $record): void {
+                            $transfer = $record->warehouseTransfers()
+                                ->where('status', 'pending')
+                                ->first();
 
-                        // Create transfer history record
-                        \App\Models\WarehouseTransfer::create([
-                            'inventory_id' => $record->id,
-                            'from_location' => $record->location_code,
-                            'to_location' => $data['to_location'],
-                            'quantity' => $record->actual_count,
-                            'transfer_date' => $data['transfer_date'],
-                            'notes' => $data['notes'] ?? null,
-                            'status' => 'completed',
-                            'received_date' => now(),
-                        ]);
+                            if (!$transfer) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Receive Failed')
+                                    ->body('No pending transfer found.')
+                                    ->send();
+                                return;
+                            }
 
-                        // Update the location
-                        $record->update([
-                            'location_code' => $data['to_location']
-                        ]);
+                            $transfer->update([
+                                'status' => 'completed',
+                                'received_date' => now(),
+                            ]);
 
-                        Notification::make()
-                            ->success()
-                            ->title('Transfer Successful')
-                            ->send();
-                    }),
-                Tables\Actions\DeleteAction::make()
-                    ->modalHeading('Delete Inventory')
-                    ->slideOver(),
+                            $record->update([
+                                'location_code' => $transfer->to_location
+                            ]);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Transfer Completed')
+                                ->body('Items have been received at the new location.')
+                                ->send();
+                        }),
+                    Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Inventory')
+                        ->slideOver()
+                        ->icon('heroicon-m-trash'),
+                ])
+                    ->label('Actions')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->color('gray')
+                    ->button(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()

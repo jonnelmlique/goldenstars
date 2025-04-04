@@ -27,4 +27,14 @@ class WarehouseTransfer extends Model
     {
         return $this->belongsTo(WarehouseInventory::class, 'inventory_id');
     }
+
+    public function fromShelf(): BelongsTo
+    {
+        return $this->belongsTo(WarehouseShelf::class, 'from_location', 'location_code');
+    }
+
+    public function toShelf(): BelongsTo
+    {
+        return $this->belongsTo(WarehouseShelf::class, 'to_location', 'location_code');
+    }
 }

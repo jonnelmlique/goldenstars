@@ -35,4 +35,9 @@ class WarehouseInventory extends Model
     {
         return $this->hasMany(WarehouseTransfer::class, 'inventory_id');
     }
+
+    public function hasPendingTransfer(): bool
+    {
+        return $this->warehouseTransfers()->where('status', 'pending')->exists();
+    }
 }
