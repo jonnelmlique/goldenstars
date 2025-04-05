@@ -10,6 +10,9 @@ use Filament\Notifications\Notification;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Pages\Concerns\InteractsWithFormActions;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\ImageEntry;
 
 class ViewWarehouseInventory extends ViewRecord implements HasActions
 {
@@ -111,5 +114,139 @@ class ViewWarehouseInventory extends ViewRecord implements HasActions
                     $this->dispatch('refresh'); // Add dispatch refresh event
                 }),
         ];
+    }
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        // Get both barcode versions
+        $lightBarcode = $this->record->getBarcode(2, 100, false);
+        $darkBarcode = $this->record->getBarcode(2, 100, true);
+
+        return $infolist
+            ->schema([
+                Infolists\Components\Grid::make(2)
+                    ->schema([
+                        Infolists\Components\Section::make('Item Information')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('item_number')
+                                    ->label('Item Number')
+                                    ->weight('bold')
+                                    ->color('primary')
+                                    ->size('lg'),
+                                Infolists\Components\TextEntry::make('item_name')
+                                    ->label('Item Name')
+                                    ->size('lg'),
+                                Infolists\Components\TextEntry::make('batch_number')
+                                    ->label('Batch Number')
+                                    ->icon('heroicon-m-hashtag'),
+                                Infolists\Components\TextEntry::make('bom_unit')
+                                    ->label('BOM Unit')
+                                    ->badge()
+                                    ->color('gray'),
+                            ])->columnSpan(1),
+
+                        Infolists\Components\Section::make('Barcode')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('barcode')
+                                    ->label('Item Barcode')
+                                    ->html()
+                                    ->state(function ($record) {
+                                        try {
+                                            $barcodeImage = $record->getBarcodeImage(2, 100);
+                                            return "
+                                                <div style='background-color: white; display: inline-block; padding: 10px; border-radius: 4px; margin: 0 auto;'>
+                                                    <img src='{$barcodeImage}' alt='{$record->item_number}' style='max-width: 100%;'>
+                                                </div>
+                                            ";
+                                        } catch (\Exception $e) {
+                                            return "<div>Error generating barcode: {$e->getMessage()}</div>";
+                                        }
+                                    })
+                                    ->alignment('center'),
+                                Infolists\Components\TextEntry::make('item_number')
+                                    ->label(false)
+                                    ->alignment('center')
+                                    ->size('sm')
+                                    ->fontFamily('mono'),
+                            ])->columnSpan(1),
+                    ]),
+
+                Infolists\Components\Section::make('Location Information')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('location_code')
+                            ->label('Location Code')
+                            ->icon('heroicon-m-map-pin')
+                            ->size('lg')
+                            ->weight('bold'),
+                        Infolists\Components\TextEntry::make('building_name')
+                            ->label('Building')
+                            ->getStateUsing(fn() => $this->record->shelf?->location?->building?->name ?? 'Unknown Building')
+                            ->icon('heroicon-m-building-office'),
+                    ])->columns(2),
+
+                Infolists\Components\Section::make('Inventory Status')
+                    ->compact()
+                    ->schema([
+                        Infolists\Components\Group::make([
+                            Infolists\Components\TextEntry::make('physical_inventory')
+                                ->label('Physical Inventory')
+                                ->badge()
+                                ->color('info')
+                                ->icon('heroicon-m-cube')
+                                ->size('lg'),
+                            Infolists\Components\TextEntry::make('physical_reserved')
+                                ->label('Reserved')
+                                ->badge()
+                                ->color('warning')
+                                ->icon('heroicon-m-lock-closed')
+                                ->size('lg'),
+                            Infolists\Components\TextEntry::make('actual_count')
+                                ->label('Actual Count')
+                                ->badge()
+                                ->color('success')
+                                ->icon('heroicon-m-check-circle')
+                                ->size('lg'),
+                        ])->columns(3),
+                    ]),
+
+                Infolists\Components\Section::make('Transfer Information')
+                    ->hidden(fn() => !$this->record->hasPendingTransfer())
+                    ->schema([
+                        Infolists\Components\TextEntry::make('transfer_status')
+                            ->label('Status')
+                            ->getStateUsing('Pending Transfer')
+                            ->badge()
+                            ->color('danger')
+                            ->icon('heroicon-m-arrow-path-rounded-square')
+                            ->size('lg'),
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('transfer_from')
+                                    ->label('From Location')
+                                    ->getStateUsing(function () {
+                                        $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
+                                        return $transfer?->from_location ?? '-';
+                                    }),
+                                Infolists\Components\TextEntry::make('transfer_to')
+                                    ->label('To Location')
+                                    ->getStateUsing(function () {
+                                        $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
+                                        return $transfer?->to_location ?? '-';
+                                    }),
+                                Infolists\Components\TextEntry::make('transfer_date')
+                                    ->label('Transfer Date')
+                                    ->getStateUsing(function () {
+                                        $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
+                                        return $transfer ? date('M d, Y', strtotime($transfer->transfer_date)) : '-';
+                                    }),
+                                Infolists\Components\TextEntry::make('transfer_notes')
+                                    ->label('Notes')
+                                    ->getStateUsing(function () {
+                                        $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
+                                        return $transfer?->notes ?? 'No notes';
+                                    }),
+                            ]),
+                    ]),
+            ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class WarehouseInventory extends Model
 {
@@ -39,5 +40,26 @@ class WarehouseInventory extends Model
     public function hasPendingTransfer(): bool
     {
         return $this->warehouseTransfers()->where('status', 'pending')->exists();
+    }
+
+    public function getBarcode($width = 2, $height = 50): string
+    {
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = $generator->getBarcode($this->item_number, $generator::TYPE_CODE_128, $width, $height);
+        return 'data:image/png;base64,' . base64_encode($barcode);
+    }
+
+    public function getBarcodeImage($width = 2, $height = 50): string
+    {
+        // Simple, direct approach to generate barcode
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = $generator->getBarcode(
+            $this->item_number,
+                $generator::TYPE_CODE_128,
+            $width,
+            $height
+        );
+
+        return 'data:image/png;base64,' . base64_encode($barcode);
     }
 }

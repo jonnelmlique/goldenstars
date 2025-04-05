@@ -18,6 +18,9 @@
                         Item Number</th>
                     <th
                         class="px-3 py-2 bg-gray-800 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Barcode</th>
+                    <th
+                        class="px-3 py-2 bg-gray-800 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Item Name</th>
                     <th
                         class="px-3 py-2 bg-gray-800 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -43,6 +46,10 @@
                 @foreach($inventories as $item)
                     <tr class="hover:bg-gray-800">
                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-300">{{ $item->item_number }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
+                            <img src="{{ $item->getBarcode(1, 30) }}" alt="{{ $item->item_number }}"
+                                style="max-height: 30px;">
+                        </td>
                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-300">{{ $item->item_name }}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-300">{{ $item->location_code }}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-300">{{ $item->batch_number }}</td>

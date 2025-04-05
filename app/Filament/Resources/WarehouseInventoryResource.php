@@ -9,9 +9,11 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Enums\ActionsPosition;
-use Filament\Notifications\Notification; // Add this import
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 use App\Filament\Resources\WarehouseInventoryResource\RelationManagers;
+use Illuminate\Contracts\View\View;
 
 class WarehouseInventoryResource extends Resource
 {
@@ -85,7 +87,6 @@ class WarehouseInventoryResource extends Resource
                     ->color('primary')
                     ->weight('bold')
                     ->alignCenter()
-
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('item_name')
                     ->searchable()
@@ -114,7 +115,6 @@ class WarehouseInventoryResource extends Resource
                     })
                     ->icon('heroicon-m-map-pin')
                     ->alignCenter()
-
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('bom_unit')
                     ->label('BOM Unit')
@@ -257,8 +257,17 @@ class WarehouseInventoryResource extends Resource
                         ->modalHeading('Delete Inventory')
                         ->slideOver()
                         ->icon('heroicon-m-trash'),
+                    Tables\Actions\Action::make('printBarcode')
+                        ->label('Print Barcode')
+                        ->icon('heroicon-m-document-text')
+                        ->modalContent(function (WarehouseInventory $record): View {
+                            return view('modals.barcode-print', [
+                                'inventory' => $record
+                            ]);
+                        })
+                        ->modalSubmitAction(false)
+                        ->modalCancelAction(false),
                 ])
-                    ->label('Actions')
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->color('gray')
                     ->button(),
@@ -274,6 +283,17 @@ class WarehouseInventoryResource extends Resource
                     Tables\Actions\DeleteBulkAction::make()
                         ->modalHeading('Delete Selected Inventory')
                         ->slideOver(),
+                    Tables\Actions\BulkAction::make('printBarcodes')
+                        ->label('Print Barcodes')
+                        ->icon('heroicon-m-printer')
+                        ->modalContent(function (Collection $records): View {
+                            return view('modals.barcode-print-multiple', [
+                                'inventories' => $records
+                            ]);
+                        })
+                        ->modalSubmitAction(false)
+                        ->modalCancelAction(false)
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }

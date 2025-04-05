@@ -49,6 +49,11 @@
             margin: 0 0 10px 0;
             font-size: 18px;
         }
+
+        .barcode {
+            width: 100px;
+            height: 30px;
+        }
     </style>
 </head>
 
@@ -67,6 +72,7 @@
         <thead>
             <tr>
                 <th>Item Number</th>
+                <th>Barcode</th>
                 <th>Item Name</th>
                 <th>Location</th>
                 <th>Batch Number</th>
@@ -80,6 +86,7 @@
             @foreach($inventories as $item)
                 <tr>
                     <td>{{ $item->item_number }}</td>
+                    <td><img class="barcode" src="{{ $item->getBarcode(1, 30) }}" alt="{{ $item->item_number }}"></td>
                     <td>{{ $item->item_name }}</td>
                     <td>{{ $item->location_code }}</td>
                     <td>{{ $item->batch_number }}</td>
