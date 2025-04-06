@@ -253,10 +253,6 @@ class WarehouseInventoryResource extends Resource
                                 ->body('Items have been received at the new location.')
                                 ->send();
                         }),
-                    Tables\Actions\DeleteAction::make()
-                        ->modalHeading('Delete Inventory')
-                        ->slideOver()
-                        ->icon('heroicon-m-trash'),
                     Tables\Actions\Action::make('printBarcode')
                         ->label('Print Barcode')
                         ->icon('heroicon-m-document-text')
@@ -267,6 +263,10 @@ class WarehouseInventoryResource extends Resource
                         })
                         ->modalSubmitAction(false)
                         ->modalCancelAction(false),
+                    Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Inventory')
+                        ->slideOver()
+                        ->icon('heroicon-m-trash'),
                 ])
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->color('gray')
@@ -278,7 +278,7 @@ class WarehouseInventoryResource extends Resource
                     ->slideOver()
                     ->icon('heroicon-m-plus'),
                 Tables\Actions\Action::make('editByItemNumber')
-                    ->label('Edit by Item Number')
+                    ->label('Scan Barcode')
                     ->icon('heroicon-m-qr-code')
                     ->modalHeading('Edit Inventory')
                     ->modalWidth('4xl')
