@@ -37,6 +37,11 @@ class WarehouseLocationResource extends Resource
                     ->numeric()
                     ->default(0),
             ]),
+            Forms\Components\Select::make('building_id')
+                ->relationship('building', 'name')
+                ->required()
+                ->preload()
+                ->searchable(),
         ]);
     }
 
@@ -54,6 +59,10 @@ class WarehouseLocationResource extends Resource
                 Tables\Columns\TextColumn::make('shelves_count')
                     ->counts('shelves')
                     ->label('Shelves')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('building.name')
+                    ->label('Building')
+                    ->searchable()
                     ->toggleable(),
             ])
             ->actions([
