@@ -277,24 +277,164 @@ class WarehouseInventoryResource extends Resource
                     ->modalHeading('Create Inventory')
                     ->slideOver()
                     ->icon('heroicon-m-plus'),
+                Tables\Actions\Action::make('editByItemNumber')
+                    ->label('Edit by Item Number')
+                    ->icon('heroicon-m-qr-code')
+                    ->modalHeading('Edit Inventory')
+                    ->modalWidth('4xl')
+                    ->form([
+                        Forms\Components\Group::make([
+                            Forms\Components\Section::make('Find Inventory')
+                                ->schema([
+                                    Forms\Components\TextInput::make('item_number')
+                                        ->required()
+                                        ->label('Item Number')
+                                        ->placeholder('Scan barcode or enter item number')
+                                        ->helperText('Connect a barcode scanner to quickly scan item barcodes')
+                                        ->autofocus()
+                                        ->autocomplete(false)
+                                        ->extraInputAttributes([
+                                            'class' => 'barcode-scanner-input',
+                                            'data-scanner-enabled' => 'true',
+                                        ])
+                                        ->live(debounce: 200) // Reduced debounce time for barcode scanners which typically complete quickly
+                                        ->afterStateUpdated(function (Forms\Set $set, $state) {
+                                            $inventory = WarehouseInventory::where('item_number', $state)->first();
+
+                                            if (!$inventory) {
+                                                $set('inventory_id', null);
+                                                $set('item_name', null);
+                                                $set('batch_number', null);
+                                                $set('location_code', null);
+                                                $set('bom_unit', null);
+                                                $set('physical_inventory', null);
+                                                $set('physical_reserved', null);
+                                                $set('actual_count', null);
+                                                return;
+                                            }
+
+                                            $set('inventory_id', $inventory->id);
+                                            $set('item_name', $inventory->item_name);
+                                            $set('batch_number', $inventory->batch_number);
+                                            $set('location_code', $inventory->location_code);
+                                            $set('bom_unit', $inventory->bom_unit);
+                                            $set('physical_inventory', $inventory->physical_inventory);
+                                            $set('physical_reserved', $inventory->physical_reserved);
+                                            $set('actual_count', $inventory->actual_count);
+                                        }),
+                                ]),
+
+                            Forms\Components\Hidden::make('inventory_id'),
+
+                            Forms\Components\Section::make('Inventory Details')
+                                ->schema([
+                                    Forms\Components\Grid::make(2)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('item_name')
+                                                ->required()
+                                                ->disabled(fn(Forms\Get $get): bool => $get('inventory_id') === null),
+                                            Forms\Components\TextInput::make('batch_number')
+                                                ->required()
+                                                ->disabled(fn(Forms\Get $get): bool => $get('inventory_id') === null),
+                                            Forms\Components\Select::make('location_code')
+                                                ->label('Location')
+                                                ->options(function () {
+                                                    $shelves = \App\Models\WarehouseShelf::with(['location.building'])->get();
+                                                    return $shelves->mapWithKeys(function ($shelf) {
+                                                        $buildingName = $shelf->location?->building?->name ?? 'Unknown';
+                                                        return [$shelf->location_code => "{$shelf->location_code} - {$buildingName}"];
+                                                    })->toArray();
+                                                })
+                                                ->required()
+                                                ->searchable()
+                                                ->disabled(fn(Forms\Get $get): bool => $get('inventory_id') === null),
+                                            Forms\Components\TextInput::make('bom_unit')
+                                                ->label('BOM Unit')
+                                                ->required()
+                                                ->disabled(fn(Forms\Get $get): bool => $get('inventory_id') === null),
+                                            Forms\Components\TextInput::make('physical_inventory')
+                                                ->numeric()
+                                                ->required()
+                                                ->live()
+                                                ->disabled(fn(Forms\Get $get): bool => $get('inventory_id') === null)
+                                                ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                                    $reserved = intval($get('physical_reserved') ?? 0);
+                                                    $inventory = intval($state ?? 0);
+                                                    $set('actual_count', $inventory - $reserved);
+                                                }),
+                                            Forms\Components\TextInput::make('physical_reserved')
+                                                ->numeric()
+                                                ->required()
+                                                ->live()
+                                                ->disabled(fn(Forms\Get $get): bool => $get('inventory_id') === null)
+                                                ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                                    $inventory = intval($get('physical_inventory') ?? 0);
+                                                    $reserved = intval($state ?? 0);
+                                                    $set('actual_count', $inventory - $reserved);
+                                                }),
+                                            Forms\Components\TextInput::make('actual_count')
+                                                ->numeric()
+                                                ->required()
+                                                ->disabled()
+                                                ->columnSpan(2),
+                                        ]),
+                                ])
+                                ->visible(fn(Forms\Get $get): bool => $get('inventory_id') !== null),
+                        ]),
+                    ])
+                    ->action(function (array $data) {
+                        if (empty($data['inventory_id'])) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Update Failed')
+                                ->body('No inventory record found to update.')
+                                ->send();
+                            return;
+                        }
+
+                        $inventory = WarehouseInventory::find($data['inventory_id']);
+
+                        if (!$inventory) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Update Failed')
+                                ->body('The inventory record could not be found.')
+                                ->send();
+                            return;
+                        }
+
+                        $inventory->update([
+                            'item_name' => $data['item_name'],
+                            'batch_number' => $data['batch_number'],
+                            'location_code' => $data['location_code'],
+                            'bom_unit' => $data['bom_unit'],
+                            'physical_inventory' => $data['physical_inventory'],
+                            'physical_reserved' => $data['physical_reserved'],
+                            'actual_count' => $data['physical_inventory'] - $data['physical_reserved'],
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Inventory Updated')
+                            ->body('The inventory has been successfully updated.')
+                            ->send();
+                    }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->modalHeading('Delete Selected Inventory')
-                        ->slideOver(),
-                    Tables\Actions\BulkAction::make('printBarcodes')
-                        ->label('Print Barcodes')
-                        ->icon('heroicon-m-printer')
-                        ->modalContent(function (Collection $records): View {
-                            return view('modals.barcode-print-multiple', [
-                                'inventories' => $records
-                            ]);
-                        })
-                        ->modalSubmitAction(false)
-                        ->modalCancelAction(false)
-                        ->deselectRecordsAfterCompletion(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->modalHeading('Delete Selected Inventory')
+                    ->slideOver(),
+                Tables\Actions\BulkAction::make('printBarcodes')
+                    ->label('Print Barcodes')
+                    ->icon('heroicon-m-printer')
+                    ->modalContent(function (Collection $records): View {
+                        return view('modals.barcode-print-multiple', [
+                            'inventories' => $records
+                        ]);
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->deselectRecordsAfterCompletion(),
             ]);
     }
 
@@ -323,6 +463,7 @@ class WarehouseInventoryResource extends Resource
         return [
             'index' => \App\Filament\Resources\WarehouseInventoryResource\Pages\ListWarehouseInventory::route('/'),
             'view' => \App\Filament\Resources\WarehouseInventoryResource\Pages\ViewWarehouseInventory::route('/{record}'),
+            'edit' => \App\Filament\Resources\WarehouseInventoryResource\Pages\EditWarehouseInventory::route('/{record}/edit'),
         ];
     }
 
