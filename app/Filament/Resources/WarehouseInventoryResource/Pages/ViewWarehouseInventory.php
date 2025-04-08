@@ -39,8 +39,10 @@ class ViewWarehouseInventory extends ViewRecord implements HasActions
                         })
                         ->required()
                         ->searchable(),
-                    Forms\Components\DatePicker::make('transfer_date')
+                    Forms\Components\DateTimePicker::make('transfer_date')
+                        ->label('Transfer Date & Time')
                         ->required()
+                        ->seconds(false)
                         ->default(now()),
                     Forms\Components\Textarea::make('notes')
                         ->rows(3),
@@ -225,19 +227,30 @@ class ViewWarehouseInventory extends ViewRecord implements HasActions
                                     ->label('From Location')
                                     ->getStateUsing(function () {
                                         $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
-                                        return $transfer?->from_location ?? '-';
+                                        if (!$transfer)
+                                            return '-';
+
+                                        $building = $transfer->fromShelf?->location?->building?->name ?? 'Unknown Building';
+                                        return $transfer->from_location . ' (' . $building . ')';
                                     }),
                                 Infolists\Components\TextEntry::make('transfer_to')
                                     ->label('To Location')
                                     ->getStateUsing(function () {
                                         $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
-                                        return $transfer?->to_location ?? '-';
+                                        if (!$transfer)
+                                            return '-';
+
+                                        $building = $transfer->toShelf?->location?->building?->name ?? 'Unknown Building';
+                                        return $transfer->to_location . ' (' . $building . ')';
                                     }),
                                 Infolists\Components\TextEntry::make('transfer_date')
-                                    ->label('Transfer Date')
+                                    ->label('Transfer Date & Time')
                                     ->getStateUsing(function () {
                                         $transfer = $this->record->warehouseTransfers()->where('status', 'pending')->first();
-                                        return $transfer ? date('M d, Y', strtotime($transfer->transfer_date)) : '-';
+                                        if (!$transfer || !$transfer->transfer_date)
+                                            return '-';
+
+                                        return $transfer->transfer_date->format('M d, Y h:i A');
                                     }),
                                 Infolists\Components\TextEntry::make('transfer_notes')
                                     ->label('Notes')

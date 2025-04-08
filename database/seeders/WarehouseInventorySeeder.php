@@ -22,7 +22,7 @@ class WarehouseInventorySeeder extends Seeder
                 'bom_unit' => 'BOX',
                 'physical_inventory' => 100,
                 'physical_reserved' => 20,
-                'actual_count' => 100,
+                'actual_count' => 80, // Updated: 100 - 20 = 80
             ],
             [
                 'item_number' => 'NGT002',
@@ -31,7 +31,7 @@ class WarehouseInventorySeeder extends Seeder
                 'bom_unit' => 'BOX',
                 'physical_inventory' => 150,
                 'physical_reserved' => 30,
-                'actual_count' => 150,
+                'actual_count' => 120, // Updated: 150 - 30 = 120
             ],
             [
                 'item_number' => 'NGT003',
@@ -40,7 +40,7 @@ class WarehouseInventorySeeder extends Seeder
                 'bom_unit' => 'BOX',
                 'physical_inventory' => 200,
                 'physical_reserved' => 40,
-                'actual_count' => 200,
+                'actual_count' => 160, // Updated: 200 - 40 = 160
             ],
             [
                 'item_number' => 'NGT004',
@@ -49,7 +49,7 @@ class WarehouseInventorySeeder extends Seeder
                 'bom_unit' => 'BOX',
                 'physical_inventory' => 120,
                 'physical_reserved' => 25,
-                'actual_count' => 120,
+                'actual_count' => 95, // Updated: 120 - 25 = 95
             ],
             [
                 'item_number' => 'NGT005',
@@ -58,7 +58,7 @@ class WarehouseInventorySeeder extends Seeder
                 'bom_unit' => 'BOX',
                 'physical_inventory' => 80,
                 'physical_reserved' => 15,
-                'actual_count' => 80,
+                'actual_count' => 65, // Updated: 80 - 15 = 65
             ],
         ];
 

@@ -19,8 +19,8 @@ class WarehouseTransfer extends Model
     ];
 
     protected $casts = [
-        'transfer_date' => 'date',
-        'received_date' => 'date',
+        'transfer_date' => 'datetime',
+        'received_date' => 'datetime',
     ];
 
     public function inventory(): BelongsTo

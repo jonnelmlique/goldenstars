@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <div class="text-gray-500 dark:text-gray-400">Transfer Date</div>
-                    <div class="dark:text-gray-200">{{ $getRecord()->transfer_date->format('M d, Y') }}</div>
+                    <div class="dark:text-gray-200">{{ $getRecord()->transfer_date->format('M d, Y h:i A') }}</div>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
             @if($getRecord()->received_date)
                 <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     <x-filament::icon icon="heroicon-m-calendar-days" class="w-4 h-4" />
-                    Received: {{ $getRecord()->received_date->format('M d, Y') }}
+                    Received: {{ $getRecord()->received_date->format('M d, Y h:i A') }}
                 </div>
             @endif
         </div>

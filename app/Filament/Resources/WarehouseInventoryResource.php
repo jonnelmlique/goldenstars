@@ -185,8 +185,10 @@ class WarehouseInventoryResource extends Resource
                                 })
                                 ->required()
                                 ->searchable(),
-                            Forms\Components\DatePicker::make('transfer_date')
+                            Forms\Components\DateTimePicker::make('transfer_date')
+                                ->label('Transfer Date & Time')
                                 ->required()
+                                ->seconds(false)
                                 ->default(now()),
                             Forms\Components\Textarea::make('notes')
                                 ->rows(3),

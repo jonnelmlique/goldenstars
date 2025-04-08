@@ -13,8 +13,8 @@ return new class extends Migration {
             $table->string('from_location');
             $table->string('to_location');
             $table->integer('quantity');
-            $table->date('transfer_date');
-            $table->date('received_date')->nullable();
+            $table->dateTime('transfer_date');  // Changed from date to dateTime
+            $table->dateTime('received_date')->nullable();  // Changed from date to dateTime
             $table->string('status')->default('pending'); // pending, completed
             $table->text('notes')->nullable();
             $table->timestamps();
