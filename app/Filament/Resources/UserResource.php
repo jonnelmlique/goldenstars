@@ -90,37 +90,47 @@ class UserResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->slideOver(),
-                Tables\Actions\Action::make('change_password')
-                    ->icon('heroicon-o-key')
-                    ->slideOver()
-                    ->form([
-                        Forms\Components\TextInput::make('new_password')
-                            ->label('New Password')
-                            ->password()
-                            ->revealable()
-                            ->required()
-                            ->minLength(8),
-                        Forms\Components\TextInput::make('new_password_confirmation')
-                            ->label('Confirm Password')
-                            ->password()
-                            ->revealable()
-                            ->required()
-                            ->same('new_password'),
-                    ])
-                    ->action(function (User $record, array $data): void {
-                        $record->update([
-                            'password' => Hash::make($data['new_password']),
-                        ]);
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->slideOver()
+                        ->icon('heroicon-m-pencil-square'),
+                    Tables\Actions\Action::make('change_password')
+                        ->icon('heroicon-m-key')
+                        ->slideOver()
+                        ->form([
+                            Forms\Components\TextInput::make('new_password')
+                                ->label('New Password')
+                                ->password()
+                                ->revealable()
+                                ->required()
+                                ->minLength(8),
+                            Forms\Components\TextInput::make('new_password_confirmation')
+                                ->label('Confirm Password')
+                                ->password()
+                                ->revealable()
+                                ->required()
+                                ->same('new_password'),
+                        ])
+                        ->action(function (User $record, array $data): void {
+                            $record->update([
+                                'password' => Hash::make($data['new_password']),
+                            ]);
 
-                        Notification::make()
-                            ->title('Password updated successfully')
-                            ->success()
-                            ->send();
-                    })
-                    ->modalHeading('Change Password')
-                    ->modalButton('Update Password'),
-                Tables\Actions\DeleteAction::make()->slideOver(),
+                            Notification::make()
+                                ->title('Password updated successfully')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Change Password')
+                        ->modalButton('Update Password'),
+                    Tables\Actions\DeleteAction::make()
+                        ->slideOver()
+                        ->icon('heroicon-m-trash'),
+                ])
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->label('Actions')
+                    ->tooltip('Actions')
+                    ->dropdownPlacement('bottom-end'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

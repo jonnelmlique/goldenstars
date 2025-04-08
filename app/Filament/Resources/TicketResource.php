@@ -240,7 +240,7 @@ class TicketResource extends Resource
                         })
                         ->visible(fn(Ticket $record) => $record->canBeMarkedAsCompleted() && auth()->user()->id === $record->requestor_id),
                 ])
-                    ->tooltip('Actions')
+                    ->tooltip(tooltip: 'Actions')
                     ->iconButton(),
             ])
             ->filters([

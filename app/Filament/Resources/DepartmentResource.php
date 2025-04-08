@@ -58,8 +58,10 @@ class DepartmentResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->slideOver(),
-                Tables\Actions\DeleteAction::make()->slideOver(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()->slideOver(),
+                    Tables\Actions\DeleteAction::make()->slideOver(),
+                ])->dropdown(true)->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

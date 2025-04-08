@@ -73,12 +73,20 @@ class WarehouseShelfResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->modalHeading('Edit Shelf')
-                    ->slideOver(),
-                Tables\Actions\DeleteAction::make()
-                    ->modalHeading('Delete Shelf')
-                    ->slideOver(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->modalHeading('Edit Shelf')
+                        ->slideOver()
+                        ->icon('heroicon-m-pencil-square'),
+                    Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Shelf')
+                        ->slideOver()
+                        ->icon('heroicon-m-trash'),
+                ])
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->label('Actions')
+                    ->tooltip('Actions')
+                    ->dropdownPlacement('bottom-end'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()

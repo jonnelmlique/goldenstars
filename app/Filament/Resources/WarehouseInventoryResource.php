@@ -271,8 +271,8 @@ class WarehouseInventoryResource extends Resource
                         ->icon('heroicon-m-trash'),
                 ])
                     ->icon('heroicon-m-ellipsis-vertical')
-                    ->color('gray')
-                    ->button(),
+                    ->tooltip(tooltip: 'Actions'),
+
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()

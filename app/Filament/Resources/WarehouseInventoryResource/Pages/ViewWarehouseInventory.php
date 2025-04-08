@@ -24,6 +24,12 @@ class ViewWarehouseInventory extends ViewRecord implements HasActions
     protected function getActions(): array
     {
         return [
+            Actions\Action::make('printBarcode')
+                ->label('Print Barcode')
+                ->icon('heroicon-m-printer')
+                ->url(fn () => route('print.barcode', ['id' => $this->record->id]))
+                ->openUrlInNewTab(),
+
             Actions\Action::make('transfer')
                 ->icon('heroicon-m-arrow-path-rounded-square')
                 ->visible(fn() => !$this->record->hasPendingTransfer())

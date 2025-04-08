@@ -115,8 +115,18 @@ class InventoryItemResource extends Resource
                     ->label('Defective Items'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->slideOver(),
-                Tables\Actions\DeleteAction::make()->slideOver(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->slideOver()
+                        ->icon('heroicon-m-pencil-square'),
+                    Tables\Actions\DeleteAction::make()
+                        ->slideOver()
+                        ->icon('heroicon-m-trash'),
+                ])
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->label('Actions')
+                    ->tooltip('Actions')
+                    ->dropdownPlacement('bottom-end'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

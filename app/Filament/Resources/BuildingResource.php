@@ -59,12 +59,16 @@ class BuildingResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->modalHeading('Edit Building')
-                    ->slideOver(),
-                Tables\Actions\DeleteAction::make()
-                    ->modalHeading('Delete Building')
-                    ->slideOver(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->modalHeading('Edit Building')
+                        ->slideOver(),
+                    Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Building')
+                        ->slideOver(),
+                ])
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->tooltip('Actions'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()

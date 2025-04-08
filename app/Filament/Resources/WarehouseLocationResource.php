@@ -66,12 +66,20 @@ class WarehouseLocationResource extends Resource
                     ->toggleable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->modalHeading('Edit Location')
-                    ->slideOver(),
-                Tables\Actions\DeleteAction::make()
-                    ->modalHeading('Delete Location')
-                    ->slideOver(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->modalHeading('Edit Location')
+                        ->slideOver()
+                        ->icon('heroicon-m-pencil-square'),
+                    Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Location')
+                        ->slideOver()
+                        ->icon('heroicon-m-trash'),
+                ])
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->label('Actions')
+                    ->tooltip('Actions')
+                    ->dropdownPlacement('bottom-end'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
